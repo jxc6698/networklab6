@@ -1,33 +1,7 @@
-#include<sys/types.h>
-#include<linux/if_ether.h>
-//#include<linux/in.h>
-#include<memory.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <netinet/ip.h>
-#include <netinet/ip_icmp.h> 
-#include <netinet/udp.h>
-#include <signal.h>
-#include <arpa/inet.h>
-#include <netpacket/packet.h>
-#include <sys/ioctl.h>
-#include <net/if.h>
-#include <netdb.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <linux/rtnetlink.h>
 
-#include <netinet/if_ether.h>
-#include <netinet/ether.h>
 
-#include <unistd.h>
-#include <stdlib.h>
-#include <errno.h>
-#include <string.h>
-#include <stdio.h>
-#include <memory.h>
-#include <errno.h>
 
+#include "essential_head.h"
 #include "typess.h"
 #include "arp.h"
 
