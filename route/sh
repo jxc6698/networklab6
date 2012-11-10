@@ -1,1 +1,1 @@
-gcc  multithread.h typess.h header.h arp.h route.c -lpthread 
+gcc  multithread.h typess.h header.h arp.h essential_data.h essential_head.h function_head.h function_head.c  route.c -lpthread 

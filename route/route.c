@@ -1,7 +1,7 @@
-#include "essential_head.h"
+#include "function_head.h"
 #include "header.h"
 #include "multithread.h"
-#include <pthread.h>
+
 
 void route( char *buf , int len )
 {
@@ -244,6 +244,15 @@ void *handle_packet(void *data)
 	while(1)
 	{
 		pull_from_buf( buf , &n_read );
+
+// 只显示目标是自己的包
+		if( !whether_inout( buf ) )
+		{
+			continue ;
+//			route( buf , n_read ) ; 
+		}
+
+
 		eth_head = buf ;
 		p = eth_head ;
 		printf("%04x",*(_U16 *)(eth_head+12));
@@ -256,24 +265,26 @@ void *handle_packet(void *data)
 				proto = (ip_head+9)[0] ;
 				printf("protocal:");
 				switch(proto){
-					case IPPROTO_ICMP: printf("icmp\n"); /*showicmp(buf , n_read )*/ ;break;
-					case IPPROTO_IGMP: printf("igmp\n");break;
-					case IPPROTO_IPIP: printf("ipip\n");break;
-					case IPPROTO_TCP:  printf("tcp:\n");break;
-					case IPPROTO_UDP:  printf("udp:\n");break;
+					case IPPROTO_ICMP: printf("icmp\n"); /*showicmp(buf , n_read )*/ ;
+						break;
+					case IPPROTO_IGMP: printf("igmp\n");
+						break;					
+					case IPPROTO_IPIP: printf("ipip\n");	
+						break;
+					case IPPROTO_TCP:  printf("tcp:\n");
+						write( ether_ip[1],  (char *)(&n_read)  , 4 );
+						write( ether_ip[1],buf , n_read );
+						break;
+					case IPPROTO_UDP:  printf("udp:\n");
+						break;
 					default:printf("pls query yourself\n");
 					}
-/*					if( whether_inout( buf ) )
-					{
-						printf(" enter route \n");
-						route( buf , n_read ) ; 
-					}
-*/
+
  				break;
 			case eth_ARP:
 				printf("arp\n");
 			//	showarp( buf , n_read );
-				arp_reply( buf , n_read, device[1].mac_addr , inet_addr("192.168.1.1"));
+			//	arp_reply( buf , n_read, device[1].mac_addr , inet_addr("192.168.1.1"));
 				break;
 			default:
 				printf(" not ip or arp protocal, maybe wrong?\n");

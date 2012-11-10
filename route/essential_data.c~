@@ -1,0 +1,24 @@
+#ifndef __essential_data_
+#define __essential_data_
+
+
+#include "essential_header.h"
+
+int ether_ip[2];
+int ip_tcp[2];
+
+void initial_pthread_pipe()
+{
+	if( pipe(ether_ip) < 0 )
+	{
+		printf("pipe create  ether_ip\n");
+		exit(-1);
+	}
+	if( pipe(ip_tcp) < 0 )
+	{
+		printf("pipe create  ip_tcp\n");
+		exit(-1);
+	}
+}
+
+#endif
