@@ -6,41 +6,6 @@
 
 
 
-_U32 sockfd , sock_sd ;
-
-
-#define NETCARD1   "eth5"  //  用于send
-#define NETCARD2   "eth4"  //  用于receive
-
-
-
-#define MAX_ARP_SIZE  512 
-#define MAX_DEVICE    10        // how many netcard
-#define MAX_ROUTE_INFO  20
-//   用与存储所有的socket 
-int socket_array[MAX_DEVICE] ;
-struct sockaddr_ll send_addr[MAX_DEVICE] ;
-int route_item_index =0;
-struct route_item{
-	char destination[16];
-	char gateway[16];
-	char netmask[16];
-	char interface[ 20 ] ;      // netcard name
-}route_info[MAX_ROUTE_INFO];
-
-int arp_item_index = 0 ;
-struct arp_table_item{
-	char ip_addr[16];      // ip
-	char mac_addr[18];     // mac
-}arp_table[MAX_ARP_SIZE];
-
-int device_index = 0 ;
-struct device_item{
-	char interface[14];    // netcard name
-	_U8 mac_addr[18];     // mac
-	_U32 ip ;
-	_U32 netmask ;
-}device[MAX_DEVICE] ;
 
 
 void add_route( int des ,int gw , int netmask , char *interface )
@@ -149,9 +114,17 @@ void initial_device()
 
 void initial_route()
 {
+//  初始化，琴空数据域
 	device_index = 0;
 	arp_item_index = 0;
 	route_item_index =0;
+	vpn_route_index=0;
+	memset( socket_array, 0 , sizeof(socket_array)) ;
+	memset( send_addr,0,sizeof(send_addr));
+	memset( route_info , 0, sizeof(route_info));
+	memset( arp_table,0,sizeof(arp_table));
+	memset(device,0,sizeof(device));
+	memset( vpn_route,0,sizeof(vpn_route));
 //  设置路由表项	
 
 
@@ -202,8 +175,7 @@ void initial_route()
 
 }
 
-#define stdshowip( x )  	printf("des:  %d:%d:%d:%d\n",_getip(x,1) ,_getip(x,2) ,_getip(x,3) ,_getip(x,4) );
-#define stdshowmac( x )          printf("sender MAC:%02x:%02x:%02x:%02x:%02x:%02x\n",(_U8)x[0],(_U8)x[1],(_U8)x[2],(_U8)x[3],(_U8)x[4],(_U8)x[5] );    
+
 
 // 用来检测这个数据包是收到的还是发出去的
 // 检测目的地址 是否 为自己 , 识别了广播包(ff:ff:ff:ff:ff:ff)

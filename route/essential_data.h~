@@ -4,10 +4,24 @@
 
 #include "essential_head.h"
 
-// write( ether_ip[1] , buf , 4 );
-// read( ether_ip[0] , buf , 4 );
-int ether_ip[2];
-int ip_tcp[2];
+
+extern int socket_array[MAX_DEVICE] ;
+extern struct sockaddr_ll send_addr[MAX_DEVICE] ;
+extern int route_item_index ;
+extern struct route_item route_info[MAX_ROUTE_INFO];
+
+extern int arp_item_index ;
+extern struct arp_table_item arp_table[MAX_ARP_SIZE];
+
+extern int device_index ;
+extern struct device_item device[MAX_DEVICE] ;
+
+extern int vpn_route_index;
+extern struct vpn_route_table vpn_route[MAX_ROUTE_INFO];
+
+
+extern int ether_ip[2];
+extern int ip_tcp[2];
 
 void initial_pthread_pipe() ;
 

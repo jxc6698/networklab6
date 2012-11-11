@@ -150,19 +150,61 @@ struct igmp_hdr
 	_U32 group ;
 };
 
-struct pesudo_udphdr { 
+struct pesudo_hdr { 
  unsigned int saddr, daddr; 
  unsigned char unused; 
  unsigned char protocol; 
- unsigned short udplen; 
+ unsigned short len; 
 }__attribute__((packed));;
 
 
 
+
+#define MAX_ARP_SIZE  512 
+#define MAX_DEVICE    10        // how many netcard
+#define MAX_ROUTE_INFO  20
+struct route_item{
+	char destination[16];
+	char gateway[16];
+	char netmask[16];
+	char interface[ 20 ] ;      // netcard name
+	int  vpn ;                  // 1 to vpn server
+};
+
+struct arp_table_item{
+	char ip_addr[16];      // ip
+	char mac_addr[18];     // mac
+};
+
+struct device_item{
+	char interface[14];    // netcard name
+	_U8 mac_addr[18];     // mac
+	_U32 ip ;
+	_U32 netmask ;
+} ;
+
+struct vpn_route_table{
+	int des;
+	int vpn_des ;
+	int netmask ;	
+};
+
+
+
+
+
+//  与使用相关的宏
+
+
+#define NETCARD1   "eth5"  //  用于send
+#define NETCARD2   "eth4"  //  用于receive
+
+#define stdshowip( x )  	printf("des:  %d:%d:%d:%d\n",_getip(x,1) ,_getip(x,2) ,_getip(x,3) ,_getip(x,4) );
+#define stdshowmac( x )          printf("sender MAC:%02x:%02x:%02x:%02x:%02x:%02x\n",(_U8)x[0],(_U8)x[1],(_U8)x[2],(_U8)x[3],(_U8)x[4],(_U8)x[5] );    
+
 #define stdshowip( x )  	printf("des:  %d:%d:%d:%d\n",_getip(x,1) ,_getip(x,2) ,_getip(x,3) ,_getip(x,4) );
 #define stdshowmac( x )          printf("sender MAC:%02x:%02x:%02x:%02x:%02x:%02x\n",(_U8)x[0],(_U8)x[1],(_U8)x[2],(_U8)x[3],(_U8)x[4],(_U8)x[5] );    
 #define _getip( x , i )  ( x>>((i-1)<<3) & (0xff) )
-
 
 
 #endif
