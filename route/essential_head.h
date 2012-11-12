@@ -70,7 +70,10 @@ struct ip4hdr
 	_U32 src_addr ;
 	_U32 dst_addr ;
 }__attribute__((packed));
-
+#define IP_PROTOTCP   6
+#define IP_PROTOUDP   17
+#define IP_PROTOPPTP  100  // my own 
+#define IP_PROTOIGMP  2
 
 //udp
 struct udp_hdr{
@@ -99,9 +102,9 @@ struct tcp_hdr{
 // op  0x0001 arp  0x0002 arp reply
 struct arp_msg{
 	unsigned short hw_type ;         //  网络序
-	unsigned short protocol_type ;   //  网络序
+	unsigned short protocal_type ;   //  网络序
 	unsigned char hw_size ;      //   ETH_ALEN = 6
-	unsigned char protocol_size ;   // ipv4  is 4
+	unsigned char protocal_size ;   // ipv4  is 4
 	unsigned short op ;
 	unsigned char  src_mac[6];
 	unsigned  src_ip ;
@@ -115,7 +118,7 @@ struct arp_msg{
 #define ARP_REQUEST   1
 #define ARP_REPLY  2
 // SHA  sender hardware address 
-// SPA  sender protocol address
+// SPA  sender protocal address
 
 
 // icmp
@@ -153,7 +156,7 @@ struct igmp_hdr
 struct pesudo_hdr { 
  unsigned int saddr, daddr; 
  unsigned char unused; 
- unsigned char protocol; 
+ unsigned char protocal; 
  unsigned short len; 
 }__attribute__((packed));;
 
@@ -168,7 +171,7 @@ struct route_item{
 	char gateway[16];
 	char netmask[16];
 	char interface[ 20 ] ;      // netcard name
-	int  vpn ;                  // 1 to vpn server
+//	int  vpn ;    not need      // 1 to vpn server
 };
 
 struct arp_table_item{
@@ -181,12 +184,13 @@ struct device_item{
 	_U8 mac_addr[18];     // mac
 	_U32 ip ;
 	_U32 netmask ;
+	int vpn ;
 } ;
 
 struct vpn_route_table{
-	int des;
-	int vpn_des ;
-	int netmask ;	
+	_U32 des;
+	_U32 vpn_des ;
+	_U32 netmask ;	
 };
 
 

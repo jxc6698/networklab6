@@ -385,8 +385,8 @@ void showarp( char *buf , int len )
 		default : printf("other type\n");
 	}
 
-	printf("hw_type : %d   p_type:  %d\n",ntohs(arp->hw_type),ntohs(arp->protocol_type) );
-	printf("hw_size : %d   protocol_size: %d\n",arp->hw_size,arp->protocol_size);
+	printf("hw_type : %d   p_type:  %d\n",ntohs(arp->hw_type),ntohs(arp->protocal_type) );
+	printf("hw_size : %d   protocal_size: %d\n",arp->hw_size,arp->protocal_size);
 	printf("op : %s\n", (arp->op==1)?("arpsender"):("arprequest"));
 	printf("src_mac:%02x:%02x:%02x:%02x:%02x:%02x  src_ip:%d,%d.%d.%d \n",arp->src_mac[0],arp->src_mac[1],arp->src_mac[2],arp->src_mac[3],arp->src_mac[4],arp->src_mac[5], _getip(arp->src_ip,1),_getip(arp->src_ip,2),_getip(arp->src_ip,3),_getip(arp->src_ip,4) );
 	printf("dst_mac:%02x:%02x:%02x:%02x:%02x:%02x  src_ip:%d,%d.%d.%d \n",arp->dst_mac[0],arp->dst_mac[1],arp->dst_mac[2],arp->dst_mac[3],arp->dst_mac[4],arp->dst_mac[5], _getip(arp->dst_ip,1),_getip(arp->dst_ip,2),_getip(arp->dst_ip,3),_getip(arp->dst_ip,4) );
@@ -407,14 +407,14 @@ void arp_request( int addr , char *MAC , int IP  )   //
 	phl->h_proto = htons( eth_ARP);
 
 	arp->hw_type = htons( 1 ) ;    // 表示以太网
-	arp->protocol_type = htons( eth_ARP ) ;
+	arp->protocal_type = htons( eth_ARP ) ;
 
 	arp->hw_size = 6 ;
-	arp->protocol_size = 4 ;
+	arp->protocal_size = 4 ;
 	arp->op= htons( ARP_REQUEST );
 	memcpy( arp->src_mac , MAC , 6 ) ;
 	arp->src_ip = IP ;
-	memset( arp->dst_mac , 0 , arp->protocol_size );
+	memset( arp->dst_mac , 0 , arp->protocal_size );
 	arp->dst_ip = addr ;
 
 
@@ -434,9 +434,9 @@ void arp_reply( char *buff , int len , char *MAC , int IP )
 	phl1->h_proto = phl->h_proto;
 
 	arp1->hw_type = htons( 1 );
-	arp1->protocol_type = htons( eth_ARP ) ;
+	arp1->protocal_type = htons( eth_ARP ) ;
 	arp1->hw_size = 6 ;
-	arp1->protocol_size = 4 ;
+	arp1->protocal_size = 4 ;
 	arp1->op = htons( ARP_REPLY ) ;
 	memcpy( arp1->src_mac , MAC , 6 )  ;
 	arp1->src_ip =  IP ;

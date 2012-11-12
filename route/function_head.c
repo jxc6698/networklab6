@@ -73,20 +73,21 @@ void tcp_pack( _U8 *buf , int len , int hlen , _U16 sport ,_U16 dport,int snum ,
 	pes->saddr = src ;
 	pes->daddr = dst ;
 	pes->unused = 0 ;
-	pes->protocol =               1  ;    //
+	pes->protocal =               1  ;    //
 	pes->len = len ;
 	tcp->csum = in_cksum( (_U16*)buff , len+12 ) ;
 }
 
-void ip_pack( _U8 *buf , int len , int total_len , int id , int flag , int time , int protocao , int src , int dst )
+void ip_pack( _U8 *buf , int len , int total_len , int id , int flag , int time , int protocal , int src , int dst )
 {
 	struct ip4hdr *ip = (struct ip4hdr *)( buf ) ;
 	ip->head_len = len /4 ;
-	ip->version =            1   ;    //
-	ip->ser_type =            1   ;  //
+	ip->version = 4 ;
+	ip->ser_type = 0 ;  //
 	ip->total_len = total_len ;
 	ip->id = id ;
 	ip->frag_off = flag ;
+	ip->protocal = protocal ;
 	ip->src_addr = src ;
 	ip->dst_addr = dst ;
 	ip->csum = 0 ;
@@ -94,12 +95,80 @@ void ip_pack( _U8 *buf , int len , int total_len , int id , int flag , int time 
 }
 
 
-void repack_vpn( int addr , _U8 *buf , int len )
+//   addr has changed in function repack_vpn
+int repack_vpn( _U32 *addr_src , _U32 *addr , _U8 *buf , int len )
 {
 	_U8 buff[4096] ;
-	
-	memcpy( buff+40 , buf , len ) ;
+	_U32 src , dst ;
+	src = *addr_src ;
+	dst = *addr ;
+	memcpy( buff+20 , buf , len ) ;
 	struct ip4hdr *ip = (struct ip4hdr *)( buff ) ;
-	struct tcp_hdr *tcp = (struct tcp_hdr *)( buff + sizeof(struct ip4hdr) );
-	
+//	struct tcp_hdr *tcp =(struct tcp_hdr *)( buff + sizeof(struct ip4hdr) );
+	if( check_vpn_route( *addr , &dst ) )
+	{
+		// no route item
+		printf("vpn route not match in repackvpn\n");
+		return -1 ;
+	}
+		
+	ip_pack( buff , 20 , len+20 , 1 , 0 , 60 ,  IP_PROTOPPTP , src , dst ) ;
+
+	memcpy( buf , buff ,len+20 );
+
+	return 1 ;
 }
+
+int unpack_vpn( _U8 *buf , _U32 len , _U32 *src , _U32 *dst )
+{
+	struct ip4hdr* ip = (struct ip4hdr*)buf ;
+	*src = ip->src_addr ;
+	*dst = ip->dst_addr ;
+	memcpy( buf , buf+ ip->head_len*4 , len - ip->head_len*4 ) ;
+	return 1 ;
+}
+
+
+
+
+
+int check_vpn_route( _U32 addr , _U32 *des )
+{
+
+struct vpn_route_table{
+	int des;
+	int vpn_des ;
+	int netmask ;	
+};
+	int i;
+	for( i=0;i<vpn_route_index ;i++ )	
+	{
+		if( (addr&vpn_route[i].netmask) == (vpn_route[i].vpn_des & vpn_route[i].netmask) )
+		{
+			*des = vpn_route[i].des ;
+			return 1 ;
+		}
+	}
+	return -1 ;
+}
+
+int add_vpn_route( _U32 des , _U32 vpn_des , _U32 netmask)
+{
+	vpn_route[vpn_route_index].des = des ;
+	vpn_route[vpn_route_index].vpn_des = vpn_des ;
+	vpn_route[vpn_route_index].netmask = netmask ;
+	vpn_route_index ++ ;
+}
+
+
+
+
+void ip_process( _U8 *buf , int len)
+{
+	struct ip4hdr *ip1 = ( struct ip4hdr *)( buf ) ;
+	if( ip1->protocal == IP_PROTOPPTP )
+	{
+		;
+	}
+}
+
