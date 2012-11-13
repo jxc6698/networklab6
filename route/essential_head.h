@@ -38,8 +38,6 @@
 #define ETH_ALEN 6
 #endif
 
-
-
 struct myethhdr{
 	unsigned char h_dest[ETH_ALEN];
 	unsigned char h_source[ETH_ALEN];
@@ -74,6 +72,7 @@ struct ip4hdr
 #define IP_PROTOUDP   17
 #define IP_PROTOPPTP  100  // my own 
 #define IP_PROTOIGMP  2
+#define IP_PROTORAW   0    // means upper no proto
 
 //udp
 struct udp_hdr{
@@ -209,6 +208,10 @@ struct vpn_route_table{
 #define stdshowip( x )  	printf("des:  %d:%d:%d:%d\n",_getip(x,1) ,_getip(x,2) ,_getip(x,3) ,_getip(x,4) );
 #define stdshowmac( x )          printf("sender MAC:%02x:%02x:%02x:%02x:%02x:%02x\n",(_U8)x[0],(_U8)x[1],(_U8)x[2],(_U8)x[3],(_U8)x[4],(_U8)x[5] );    
 #define _getip( x , i )  ( x>>((i-1)<<3) & (0xff) )
+
+#define cmp_ip_net_mask( x,y,z ) ( x&z == y&z )
+
+
 
 
 #endif

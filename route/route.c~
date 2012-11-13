@@ -18,7 +18,8 @@ void route( char *buf , int len )
 	
 
 //  查表获取mac
-	int index = reroute( ip->dst_addr )	;  // 都是网络序
+	_U32 dst ;
+	int index = reroute( ip->dst_addr , &dst )	;  // 都是网络序
 
 	stdshowip( ip->dst_addr ) ;
 
@@ -31,7 +32,8 @@ void route( char *buf , int len )
 	printf("netcard: %d \n", netcard);
 	memcpy( buf , arp_table[netcard].mac_addr , 6 );
 	memcpy( buf+6 , device[index].mac_addr , 6 ) ; 
-
+	buf[12] = 0x08 ;
+	buf[13] = 0x00 ;
 //	showpacket( buf , len ) ;
 
 	

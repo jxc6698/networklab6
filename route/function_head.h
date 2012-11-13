@@ -8,17 +8,41 @@ extern void *vpn_ip_handle_thread( void *data) ;
 unsigned short in_cksum(unsigned short *addr, int len) ;
 void tcp_pack( _U8 *buf , int len , int hlen , _U16 sport ,_U16 dport,int snum , int acknum,int flag1,int flag2 , _U16 size , _U16 point , _U32 src , _U32 dst ) ;
 
+void ip_pack( _U8 *buf , int len , int total_len , int id , int flag , int time , int protocal , int src , int dst );
+
 int repack_vpn( _U32 *addr_src , _U32 *addr , _U8 *buf , int len ) ;
 int uppack_vpn(_U8 *buf , _U32 len , _U32 *src, _U32 *dst );
 
+void ip_sed_process( _U8 *buf , int len , _U32 src ,_U32 dst ) ;
+
+
+void getmessage( _U8 *buf , int len , _U32 src );
+
+// 判断在 此ip是不是自己的
+int whether_ip_me( _U32 addr );
 
 //  注意在内部有 我的pn包的时要设置protocal_type  
-void ip_process( _U8 *buf , int len );
 
 
-// vpn route table
+
+
+//  ip route table
+int cmp_which_net( _U32 addr , int x ) ;
+
+
+//  vpn route table
 int check_vpn_route( _U32 addr , _U32 *des ) ;
 int add_vpn_route( _U32 des , _U32 vpn_des , _U32 netmask) ;
 //
 
-#endif 
+
+
+//  show 
+void showpacket( char *buf , int len ) ;
+
+
+
+
+
+
+#endif

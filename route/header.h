@@ -1,7 +1,7 @@
 #ifndef __HEADER_H_
 #define __HEADER_H_
 
-#include "essential_data.h"
+#include "function_head.h"
 #include "arp.h"
 
 
@@ -212,25 +212,27 @@ int whether_inout( char *addr )    // mac
 }
 
 
-int cmp_which_net( int addr , int x )
+int cmp_which_net( _U32 addr , int x )
 {
-	printf(" addr  netmask  dest\n");
+/*	printf(" addr  netmask  dest\n");
 	stdshowip( addr ) ;
 	stdshowip( *(_U32 *)route_info[x].netmask ) ;
 	stdshowip( *(_U32 *)route_info[x].destination ) ;
-	printf( "result : %d\n",(addr & *(_U32 *)route_info[x].netmask) == *(_U32 *)route_info[x].destination ) ; 
+	printf( "result : %d\n",(addr & *(_U32 *)route_info[x].netmask) == *(_U32 *)route_info[x].destination ) ;
+*/ 
 	return (addr & *(_U32 *)route_info[x].netmask) == *(_U32 *)route_info[x].destination ; 
 }
 
 
-// return  the 第几个设备   在device  和 socket_array中的数组下标
-int reroute( int addr )  // ip
+// return 第几个设备   在device  和 socket_array中的数组下标
+int reroute( _U32 addr , _U32 *dst  )  // ip
 {
 	int i=0 , j;
 	for( i=0;i<route_item_index;i++ )
 	{
 		if( cmp_which_net( addr , i ) )
 		{
+			*dst = *(_U32 *)( route_info[i].gateway ) ;
 			printf(" net card: %s\n",route_info[i].interface );
 			for(j=0;j< device_index ; j++ )
 				if( strcmp( route_info[i].interface , device[j].interface ) == 0 )
@@ -253,21 +255,6 @@ int search_arp_cache( int addr )
 }
 
 
-
-
-
-
-void showpacket( char *buf , int len)
-{
-	_U8 *b = (_U8 *)buf;
-	int i,j ;
-	for( i = 0 ;i<len ;i ++ , b++ )
-	{		 
-		if( i %8 == 0 )
-			printf("\n");
-		printf( "%.2x ",  *b );
-	}
-}
 
 void showudp( char *buf )
 {

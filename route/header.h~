@@ -1,16 +1,9 @@
 #ifndef __HEADER_H_
 #define __HEADER_H_
 
-#include "essential_data.h"
+#include "function_head.h"
 #include "arp.h"
 
-
-
-
-
-
-#define NETCARD1   "eth5"  //  用于send
-#define NETCARD2   "eth4"  //  用于receive
 
 
 
@@ -182,8 +175,7 @@ void initial_route()
 
 }
 
-#define stdshowip( x )  	printf("des:  %d:%d:%d:%d\n",_getip(x,1) ,_getip(x,2) ,_getip(x,3) ,_getip(x,4) );
-#define stdshowmac( x )          printf("sender MAC:%02x:%02x:%02x:%02x:%02x:%02x\n",(_U8)x[0],(_U8)x[1],(_U8)x[2],(_U8)x[3],(_U8)x[4],(_U8)x[5] );    
+
 
 // 用来检测这个数据包是收到的还是发出去的
 // 检测目的地址 是否 为自己 , 识别了广播包(ff:ff:ff:ff:ff:ff)
@@ -220,18 +212,19 @@ int whether_inout( char *addr )    // mac
 }
 
 
-int cmp_which_net( int addr , int x )
+int cmp_which_net( _U32 addr , int x )
 {
-	printf(" addr  netmask  dest\n");
+/*	printf(" addr  netmask  dest\n");
 	stdshowip( addr ) ;
 	stdshowip( *(_U32 *)route_info[x].netmask ) ;
 	stdshowip( *(_U32 *)route_info[x].destination ) ;
-	printf( "result : %d\n",(addr & *(_U32 *)route_info[x].netmask) == *(_U32 *)route_info[x].destination ) ; 
+	printf( "result : %d\n",(addr & *(_U32 *)route_info[x].netmask) == *(_U32 *)route_info[x].destination ) ;
+*/ 
 	return (addr & *(_U32 *)route_info[x].netmask) == *(_U32 *)route_info[x].destination ; 
 }
 
 
-// return  the 第几个设备   在device  和 socket_array中的数组下标
+// return 第几个设备   在device  和 socket_array中的数组下标
 int reroute( int addr )  // ip
 {
 	int i=0 , j;
@@ -261,21 +254,6 @@ int search_arp_cache( int addr )
 }
 
 
-
-
-
-
-void showpacket( char *buf , int len)
-{
-	_U8 *b = (_U8 *)buf;
-	int i,j ;
-	for( i = 0 ;i<len ;i ++ , b++ )
-	{		 
-		if( i %8 == 0 )
-			printf("\n");
-		printf( "%.2x ",  *b );
-	}
-}
 
 void showudp( char *buf )
 {
@@ -393,8 +371,8 @@ void showarp( char *buf , int len )
 		default : printf("other type\n");
 	}
 
-	printf("hw_type : %d   p_type:  %d\n",ntohs(arp->hw_type),ntohs(arp->protocol_type) );
-	printf("hw_size : %d   protocol_size: %d\n",arp->hw_size,arp->protocol_size);
+	printf("hw_type : %d   p_type:  %d\n",ntohs(arp->hw_type),ntohs(arp->protocal_type) );
+	printf("hw_size : %d   protocal_size: %d\n",arp->hw_size,arp->protocal_size);
 	printf("op : %s\n", (arp->op==1)?("arpsender"):("arprequest"));
 	printf("src_mac:%02x:%02x:%02x:%02x:%02x:%02x  src_ip:%d,%d.%d.%d \n",arp->src_mac[0],arp->src_mac[1],arp->src_mac[2],arp->src_mac[3],arp->src_mac[4],arp->src_mac[5], _getip(arp->src_ip,1),_getip(arp->src_ip,2),_getip(arp->src_ip,3),_getip(arp->src_ip,4) );
 	printf("dst_mac:%02x:%02x:%02x:%02x:%02x:%02x  src_ip:%d,%d.%d.%d \n",arp->dst_mac[0],arp->dst_mac[1],arp->dst_mac[2],arp->dst_mac[3],arp->dst_mac[4],arp->dst_mac[5], _getip(arp->dst_ip,1),_getip(arp->dst_ip,2),_getip(arp->dst_ip,3),_getip(arp->dst_ip,4) );
@@ -415,14 +393,14 @@ void arp_request( int addr , char *MAC , int IP  )   //
 	phl->h_proto = htons( eth_ARP);
 
 	arp->hw_type = htons( 1 ) ;    // 表示以太网
-	arp->protocol_type = htons( eth_ARP ) ;
+	arp->protocal_type = htons( eth_ARP ) ;
 
 	arp->hw_size = 6 ;
-	arp->protocol_size = 4 ;
+	arp->protocal_size = 4 ;
 	arp->op= htons( ARP_REQUEST );
 	memcpy( arp->src_mac , MAC , 6 ) ;
 	arp->src_ip = IP ;
-	memset( arp->dst_mac , 0 , arp->protocol_size );
+	memset( arp->dst_mac , 0 , arp->protocal_size );
 	arp->dst_ip = addr ;
 
 
@@ -442,9 +420,9 @@ void arp_reply( char *buff , int len , char *MAC , int IP )
 	phl1->h_proto = phl->h_proto;
 
 	arp1->hw_type = htons( 1 );
-	arp1->protocol_type = htons( eth_ARP ) ;
+	arp1->protocal_type = htons( eth_ARP ) ;
 	arp1->hw_size = 6 ;
-	arp1->protocol_size = 4 ;
+	arp1->protocal_size = 4 ;
 	arp1->op = htons( ARP_REPLY ) ;
 	memcpy( arp1->src_mac , MAC , 6 )  ;
 	arp1->src_ip =  IP ;
