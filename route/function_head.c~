@@ -120,6 +120,10 @@ int repack_vpn( _U32 *addr_src , _U32 *addr , _U8 *buf , int len )
 	return 1 ;
 }
 
+
+//  这里面应该有 vpn路由 的功能 ， 并且这部分也是第二层协议
+//  返回 2 表示 是数据
+//  返回 1 表示 需要继续路由
 int unpack_vpn( _U8 *buf , _U32 len , _U32 *src , _U32 *dst )
 {
 	struct ip4hdr* ip = (struct ip4hdr*)buf ;
@@ -127,10 +131,13 @@ int unpack_vpn( _U8 *buf , _U32 len , _U32 *src , _U32 *dst )
 	*dst = ip->dst_addr ;
 	if( whether_ip_me( ip->dst_addr ) > 0 )
 	{
-		getmessage( buf+ip->head_len*4 , len-ip->head_len*4 , ip->src_addr  ) ;
+//		getmessage( buf+ip->head_len*4 , len-ip->head_len*4 , ip->src_addr  ) ;
+		memset( buf , buf + ip->head_len*4 , len -ip->head_len*4 ) ;
 		return 2 ;
 	}
-	memcpy( buf, buf+ip->head_len*4 , len -ip->head_len*4 );
+	_U32 next ;
+	check_vpn_route( *dst , &next ) ;
+	*dst = next ;
 	return 1 ;
 }
 
@@ -237,6 +244,7 @@ void ip_sed_process( _U8 *buf , int len , _U32 src , _U32 dst )
 	int up_vpn = 0 , dst1 = dst ;
 	memcpy( buff + sizeof(struct myethhdr) + sizeof(struct ip4hdr) , buf , len );
 	
+//  如果要用到vpn，dst 返回不确定的值 否则返回吓一跳ip地址
 	int index = reroute( dst1 , &dst );
 	
 	printf("index netcard : %d  in ip_sed_process\n" , index );
@@ -249,8 +257,8 @@ void ip_sed_process( _U8 *buf , int len , _U32 src , _U32 dst )
 		
 		repack_vpn( &src , &dst1 , buff + sizeof(struct myethhdr) + sizeof(struct ip4hdr) , len ) ;
 		up_vpn = 1;
-//  因为在repack函数中 dst已经被改变
-		index = reroute( dst );
+//  因为在repack函数中 dst1已经被改变
+		index = reroute( dst1 , &dst );
 		len += 20 ;
 	}
 

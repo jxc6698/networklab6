@@ -120,6 +120,11 @@ int repack_vpn( _U32 *addr_src , _U32 *addr , _U8 *buf , int len )
 	return 1 ;
 }
 
+
+//  这里面应该有 vpn路由 的功能 ， 并且这部分也是第二层协议
+//  返回 2 表示 是数据
+//  返回 1 表示 需要继续路由
+//  吓一跳地址放在了 dst 中返回
 int unpack_vpn( _U8 *buf , _U32 len , _U32 *src , _U32 *dst )
 {
 	struct ip4hdr* ip = (struct ip4hdr*)buf ;
@@ -127,10 +132,13 @@ int unpack_vpn( _U8 *buf , _U32 len , _U32 *src , _U32 *dst )
 	*dst = ip->dst_addr ;
 	if( whether_ip_me( ip->dst_addr ) > 0 )
 	{
-		getmessage( buf+ip->head_len*4 , len-ip->head_len*4 , ip->src_addr  ) ;
+//		getmessage( buf+ip->head_len*4 , len-ip->head_len*4 , ip->src_addr  ) ;
+		memset( buf , buf + ip->head_len*4 , len -ip->head_len*4 ) ;
 		return 2 ;
 	}
-	memcpy( buf, buf+ip->head_len*4 , len -ip->head_len*4 );
+	_U32 next ;
+	check_vpn_route( *dst , &next ) ;
+	*dst = next ;
 	return 1 ;
 }
 
