@@ -133,13 +133,15 @@ int unpack_vpn( _U8 *buf , _U32 len , _U32 *src , _U32 *dst )
 	if( whether_ip_me( ip->dst_addr ) > 0 )
 	{
 //		getmessage( buf+ip->head_len*4 , len-ip->head_len*4 , ip->src_addr  ) ;
-		memset( buf , buf + ip->head_len*4 , len -ip->head_len*4 ) ;
+		memcpy( buf , buf + ip->head_len*4 , len -ip->head_len*4 ) ;
 		return 2 ;
 	}
 	_U32 next ;
 	check_vpn_route( *dst , &next ) ;
 	*dst = next ;
+	if(   )
 	return 1 ;
+
 }
 
 
@@ -225,6 +227,11 @@ void ip_rec_process( _U8 *buf , int len)
 		else if( mark == 2 )
 		{
 			getmessage( buf , len , src ) ;
+			return ;
+		}
+		else if( mark == 2 )
+		{
+			ether_send( buf , len , vpn_dst ) ;
 			return ;
 		}
 	}
@@ -320,4 +327,35 @@ void getmessage( _U8 *buf , int len , _U32 src )
 	stdshowip( src );
 	printf("length : %d \n%s\n" ,len , buf );
 }
+
+void ether_send( _U8* buf , int len , _U32 dst )
+{
+	_U8 buff[4096] ;
+	memcpy( buff+14 , buf , len ) ;
+
+	struct myethhdr* eth = ( struct myethhdr* )( buff ) ;
+	eth->h_proto = htons( 0x0800 ) ;
+
+	int netcard = search_arp_cache( dst ) ;
+
+	memcpy( buf , arp_table[netcard].mac_addr , 6 );
+	memcpy( buf+6 , device[index].mac_addr , 6 ) ;
+ 
+	len += 14 ;
+
+	sendto( socket_array[index] , buff , len , 0 , (struct sockaddr *)&send_addr[index] , sizeof( send_addr[index] ) );
+
+}
+
+int selnetcard( _U32 addr )
+{
+	int i;
+	for(i=0; i< device_index  ; i++ )
+	{
+		if( cmp_ip_net_mask( addr , device[i].ip , device[i].netmask ) )
+			return i ;
+	}
+	return -1 ;
+}
+
 

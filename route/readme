@@ -5,3 +5,5 @@ committed in NOV 13 20 44
 
 committed in NOV 13 23:52 
 
+committed in NOV 16 01:37
+	今天调试时发现的问题，vpn部分只有包装，转发，却没有解包的处理，导致包不能脱下vpn的外壳

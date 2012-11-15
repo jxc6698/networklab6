@@ -13,7 +13,10 @@ void ip_pack( _U8 *buf , int len , int total_len , int id , int flag , int time 
 int repack_vpn( _U32 *addr_src , _U32 *addr , _U8 *buf , int len ) ;
 int uppack_vpn(_U8 *buf , _U32 len , _U32 *src, _U32 *dst );
 
+
+
 void ip_sed_process( _U8 *buf , int len , _U32 src ,_U32 dst ) ;
+void ether_send( _U8*  buf , int len , _U32  dst ) ;
 
 
 void getmessage( _U8 *buf , int len , _U32 src );
@@ -41,6 +44,9 @@ int add_vpn_route( _U32 des , _U32 vpn_des , _U32 netmask) ;
 void showpacket( char *buf , int len ) ;
 
 
+// 获得 addr  对应的地址的网卡 
+// 错误返回 -1 
+int selnetcard( _U32 addr ) ;
 
 
 
