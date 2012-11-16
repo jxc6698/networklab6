@@ -101,7 +101,9 @@ void initial_device()
 		if(nlen <= 0) continue ;
 		if(szname[nlen-1] == ':') { szname[nlen-1]=0;}
 		if(strcmp(szname,"lo") == 0 )continue ;
+		if(strcmp(szname,"pan0") == 0 )continue ;
 		strcpy( device[device_index].interface , szname );
+		device[device_index].vpn = 0 ;
 		device_index ++ ;
 //		printf("name : %s\n" , szname );
 	}
@@ -110,6 +112,19 @@ void initial_device()
 	f=NULL;
 	return ;
 }
+
+void initial_vpn_device()
+{
+	strcpy( device[device_index].interface , "vpn_eth0" ) ;
+	device[device_index].netmask = inet_addr( "255.255.255.0" ) ;
+	device[device_index].ip = inet_addr( "192.168.10.1" );
+	device[device_index].vpn = 1 ;
+//	printf("vpn ether %d \n", device_index );
+//	stdshowip( device[device_index].netmask );
+//	stdshowip( device[device_index].ip );
+	device_index ++ ;
+}
+
 
 
 void initial_route()
@@ -129,6 +144,7 @@ void initial_route()
 
 
 	initial_device();
+	initial_vpn_device() ;
 /*
 //  设置设备与mac
 	device[0].mac_addr[0] = 0x00 ;
@@ -149,19 +165,25 @@ void initial_route()
 	strcpy( device[1].interface , "eth4" ) ;
 	device_index ++ ;
 //
-*/	
+*/
+
+	add_vpn_route( inet_addr( "192.168.2.10" ),inet_addr( "192.168.3.0" ),inet_addr( "255.255.255.0" ) ) ;
 
 
-	add_route( inet_addr( "192.168.1.0" ) , inet_addr( "192.168.1.2" ) , inet_addr("255.255.255.0") , "eth4" ) ;
+	add_route( inet_addr( "192.168.1.0" ) , inet_addr( "192.168.1.1" ) , inet_addr("255.255.255.0") , "eth4" ) ;
 	add_route( inet_addr( "192.168.2.0" ) , inet_addr( "192.168.2.2" ) , inet_addr("255.255.255.0") , "eth5" ) ;
+	add_route( inet_addr( "192.168.3.0" ) , inet_addr( "192.168.10.2" ) , inet_addr("255.255.255.0") , "vpn_eth0" ) ;
+//  "192.168.10.2" not use
+
+
 //  设置arp缓存	
 	arp_table[0].mac_addr[0] = 0x00 ;
 	arp_table[0].mac_addr[1] = 0x0c ;
 	arp_table[0].mac_addr[2] = 0x29 ;
-	arp_table[0].mac_addr[3] = 0x75 ;
-	arp_table[0].mac_addr[4] = 0x72 ;
-	arp_table[0].mac_addr[5] = 0xea ;	
-	*(_U32 *)arp_table[0].ip_addr = inet_addr( "192.168.2.2" ); 
+	arp_table[0].mac_addr[3] = 0x6c ;
+	arp_table[0].mac_addr[4] = 0x35 ;
+	arp_table[0].mac_addr[5] = 0xc5 ;	
+	*(_U32 *)arp_table[0].ip_addr = inet_addr( "192.168.2.10" ); 
 	arp_item_index ++ ;
 	arp_table[1].mac_addr[0] = 0x00 ;
 	arp_table[1].mac_addr[1] = 0x0c ;
@@ -180,7 +202,7 @@ void initial_route()
 // 用来检测这个数据包是收到的还是发出去的
 // 检测目的地址 是否 为自己 , 识别了广播包(ff:ff:ff:ff:ff:ff)
 // 返回 1 目的地址是自己  0 不是自己
-int whether_inout( char *addr )    // mac
+int whether_inout( _U8 *addr )    // mac
 {
 	printf( " in whether_inout\n");	
 //	printf("device_index : %d\n", device_index ) ;
@@ -204,7 +226,7 @@ int whether_inout( char *addr )    // mac
 	for( j = 0 ; j<6;j++)
 		if( addr[j] != 0xff )
 			mark = 1 ;
-	if( !mark)
+	if( !mark )
 	{
 		return 1 ;
 	}
@@ -225,13 +247,14 @@ int cmp_which_net( _U32 addr , int x )
 
 
 // return 第几个设备   在device  和 socket_array中的数组下标
-int reroute( int addr )  // ip
+int reroute( _U32 addr , _U32 *dst  )  // ip
 {
 	int i=0 , j;
 	for( i=0;i<route_item_index;i++ )
 	{
 		if( cmp_which_net( addr , i ) )
 		{
+			*dst = *(_U32 *)( route_info[i].gateway ) ;
 			printf(" net card: %s\n",route_info[i].interface );
 			for(j=0;j< device_index ; j++ )
 				if( strcmp( route_info[i].interface , device[j].interface ) == 0 )

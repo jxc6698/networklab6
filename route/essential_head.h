@@ -209,7 +209,7 @@ struct vpn_route_table{
 #define stdshowmac( x )          printf("sender MAC:%02x:%02x:%02x:%02x:%02x:%02x\n",(_U8)x[0],(_U8)x[1],(_U8)x[2],(_U8)x[3],(_U8)x[4],(_U8)x[5] );    
 #define _getip( x , i )  ( x>>((i-1)<<3) & (0xff) )
 
-#define cmp_ip_net_mask( x,y,z ) ( x&z == y&z )
+#define cmp_ip_net_mask( x,y,z ) ( (x&z) == (y&z) )
 
 
 

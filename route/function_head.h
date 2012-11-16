@@ -16,13 +16,17 @@ int uppack_vpn(_U8 *buf , _U32 len , _U32 *src, _U32 *dst );
 
 
 void ip_sed_process( _U8 *buf , int len , _U32 src ,_U32 dst ) ;
+void ip_rec_process( _U8 *buf , int len) ;
+// dst : next hop ip
 void ether_send( _U8*  buf , int len , _U32  dst ) ;
+
 
 
 void getmessage( _U8 *buf , int len , _U32 src );
 
 // 判断在 此ip是不是自己的
 int whether_ip_me( _U32 addr );
+int getnetcard( _U32 addr , _U32 *num ) ; 
 
 //  注意在内部有 我的pn包的时要设置protocal_type  
 
