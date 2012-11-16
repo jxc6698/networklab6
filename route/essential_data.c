@@ -19,3 +19,9 @@ struct vpn_route_table vpn_route[MAX_ROUTE_INFO];
 int ether_ip[2];
 int ip_tcp[2];
 
+
+_U8 arp_wait_buf[10][4096] ;
+int arp_wait_len[10] ;
+_U8 arp_wait_mac[10][6] ;
+int arp_valid[10] ;
+

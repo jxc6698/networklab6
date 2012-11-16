@@ -7,3 +7,8 @@ committed in NOV 13 23:52
 
 committed in NOV 16 01:37
 	今天调试时发现的问题，vpn部分只有包装，转发，却没有解包的处理，导致包不能脱下vpn的外壳
+
+committed in NOV 17 1:11
+    调试了好久，vpn发包的过程终于完全做好了，重新修正了vpn 解包和 vpn 路由的代码，同时添加了arp 缓存的代码
+
+

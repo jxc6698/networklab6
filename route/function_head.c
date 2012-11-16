@@ -126,7 +126,7 @@ int repack_vpn( _U32 *addr_src , _U32 *addr , _U8 *buf , int len )
 
 
 //  这里面应该有 vpn路由 的功能 ， 并且这部分也是第二层协议
-//  返回 2 表示 是数据
+//  返回 2 表示 是发给我的数据
 //  返回 1 表示 需要继续路由
 //  吓一跳地址放在了 dst 中返回
 int unpack_vpn( _U8 *buf , _U32 len , _U32 *src , _U32 *dst )
@@ -142,8 +142,8 @@ int unpack_vpn( _U8 *buf , _U32 len , _U32 *src , _U32 *dst )
 	}
 	_U32 next ;
 	check_vpn_route( *dst , &next ) ;
-	*dst = next ;
-//	if(   )
+	next = *dst  ;
+
 	return 1 ;
 
 }
@@ -200,9 +200,9 @@ void ip_rec_process( _U8 *buf , int len)
 		printf("index : %d\n\n",index );
 		if( device[index].vpn == 0 )
 		{
-
 //			route( buf , len ) ;
-			ether_send( buf , len , dst ) ;
+//			ether_send( buf , len , dst ) ;
+			ip_sed_process(buf , len , 0 , dst ) ;
 		}
 		else // 是vpn ,要先包 zhuang 再转发
 		{
@@ -224,7 +224,7 @@ void ip_rec_process( _U8 *buf , int len)
 //  在解包中应当包含路由 , 且在vpn_dst 中应当包含下一跳地址
 	if( ip1->protocal == IP_PROTOPPTP )
 	{		
-		mark = unpack_vpn( buf+offset , len- offset , &vpn_src , &vpn_dst ) ;
+		mark =unpack_vpn( buf+offset , len- offset , &vpn_src , &vpn_dst ) ;
 		if( mark < 0 )
 		{
 			printf(" error 1 : in function ip_rec_process \n");
@@ -237,12 +237,12 @@ void ip_rec_process( _U8 *buf , int len)
 			ip_sed_process( buf+offset , len-offset , 0 , vpn_dst ) ;
 			return ;
 		}
-		else if( mark == 2 )
+		else if( mark == 2 )  // 发现是给自己的
 		{
-			getmessage( buf , len , src ) ;
+			getmessage( buf+offset , len-offset , src ) ;
 			return ;
 		}
-		else if( mark == 2 )
+		else if( mark == 2 )  // 需要转发的
 		{
 			ether_send( buf , len , vpn_dst ) ;
 			return ;
@@ -259,6 +259,7 @@ void ip_rec_process( _U8 *buf , int len)
 
 
 //  本来这里还应该支持传如协议
+//  在这里只需要传递上一层的目标地址,是否要添加vpn在ip_sed_process里面决定
 void ip_sed_process( _U8 *buf , int len , _U32 src , _U32 dst )
 {
 	static _U8 buff[4096] ;
@@ -400,3 +401,46 @@ int getnetcard( _U32 addr , _U32 *num )
 	}
 	return -1 ;
 }
+
+
+int add_to_arp_wait_buffer( _U8 *buf , int len , _U8 mac[]  )
+{
+	int i ;
+	for(i=0;i<10 ;i++ )
+	{
+		if( arp_valid[i] )
+			continue ;
+		memcpy( arp_wait_buf[i] , buf , len );
+		arp_wait_len[i] = len ;
+		memcpy( arp_wait_mac , mac , 6 ) ;
+		arp_valid[i] = 1 ;
+		return 1 ;
+	}
+	return -1 ;
+}
+
+int check_arp_wait_buffer( _U8 *buf , int *len , _U8 mac[] )
+{
+	int mark = 0 ;
+	int i,j;
+	for( i=0;i<10 ; i++ )
+	{
+		if( !arp_valid[i] )
+			continue ;
+		i = ( i+1 )% 10 ;
+		mark = 0 ;
+		for( j=0;j<6;j++ )
+			if( mac[j] != arp_wait_buf[i][j] )
+				mark = 1 ;
+		if( mark == 1 )
+		{
+			memcpy( buf , arp_wait_buf[i] , arp_wait_len[i] ) ;
+			*len = arp_wait_len[i] ;
+			arp_valid[i] = 0 ;
+			return 1 ;
+		}
+	}
+	return -1 ;
+}
+
+

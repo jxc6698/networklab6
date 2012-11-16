@@ -23,10 +23,14 @@ extern struct vpn_route_table vpn_route[MAX_ROUTE_INFO];
 extern int ether_ip[2];
 extern int ip_tcp[2];
 
+extern _U8 arp_wait_buf[10][4096] ;
+extern _U8 arp_wait_mac[10][6] ; 
+extern int arp_wait_len[10] ;
+extern int arp_valid[10] ;
 
 
 
-void initial_pthread_pipe() ;
+//void initial_pthread_pipe() ;
 
 
 #endif

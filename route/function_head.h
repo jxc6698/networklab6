@@ -52,7 +52,12 @@ void showpacket( char *buf , int len ) ;
 // 错误返回 -1 
 int selnetcard( _U32 addr ) ;
 
+void initial_pthread_pipe() ;
 
 
+// arp缓存
+
+int check_arp_wait_buffer( _U8 *buf , int *len , _U8 mac[] ) ;
+int add_to_arp_wait_buffer( _U8 *buf , int len ,_U8 mac[] ) ;
 
 #endif
