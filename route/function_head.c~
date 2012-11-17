@@ -109,15 +109,15 @@ int repack_vpn( _U32 *addr_src , _U32 *addr , _U8 *buf , int len )
 	if( check_vpn_route( *addr , &dst ) < 0 )
 	{
 		// no route item
-		stdshowip( dst ) ;
+//		stdshowip( dst ) ;
 		printf("vpn route not match in repack_vpn\n");
 		return -1 ;
 	}
 	int index ;
 	getnetcard( dst , &index ) ;
-	printf("net index : %d   in repack_vpn\n",index);
+//	printf("net index : %d   in repack_vpn\n",index);
 	src = device[index].ip ;
-	ip_pack( buf , 20 , len+20 , 1 , 0 , 60 ,  IPPROTO_RAW , src , dst ) ;
+	ip_pack( buf , 20 , len+20 , 1 , 0 , 60 ,  IP_PROTOPPTP , src , dst ) ;
 	*addr_src = src ;
 	*addr = dst ;
 
@@ -129,23 +129,18 @@ int repack_vpn( _U32 *addr_src , _U32 *addr , _U8 *buf , int len )
 //  返回 2 表示 是发给我的数据
 //  返回 1 表示 需要继续路由
 //  吓一跳地址放在了 dst 中返回
-int unpack_vpn( _U8 *buf , _U32 len , _U32 *src , _U32 *dst )
+int unpack_vpn( _U8 *buf , _U32 *len , _U32 *src , _U32 *dst )
 {
 	struct ip4hdr* ip = (struct ip4hdr*)buf ;
 	*src = ip->src_addr ;
 	*dst = ip->dst_addr ;
 	if( whether_ip_me( ip->dst_addr ) > 0 )
 	{
-//		getmessage( buf+ip->head_len*4 , len-ip->head_len*4 , ip->src_addr  ) ;
-		memcpy( buf , buf + ip->head_len*4 , len -ip->head_len*4 ) ;
+		memcpy( buf , buf + ip->head_len*4 , *len -ip->head_len*4 ) ;
+		*len = *len -ip->head_len*4 ; 
 		return 2 ;
 	}
-	_U32 next ;
-	check_vpn_route( *dst , &next ) ;
-	next = *dst  ;
-
 	return 1 ;
-
 }
 
 
@@ -179,6 +174,7 @@ int add_vpn_route( _U32 des , _U32 vpn_des , _U32 netmask)
 
 void ip_rec_process( _U8 *buf , int len)
 {
+
 	int i, tome=0 , offset=0 ;
 	int mark;
 	_U32 src , dst ;
@@ -191,7 +187,6 @@ void ip_rec_process( _U8 *buf , int len)
 //  先要判断 ip 是不是发给自己的
 //  不是直接转发
 	tome = whether_ip_me( ip1->dst_addr ) ;
-
 	// 不是发给我的 ，判断是否需要vpn转发
 	if( tome < 0 )
 	{
@@ -200,18 +195,15 @@ void ip_rec_process( _U8 *buf , int len)
 		printf("index : %d\n\n",index );
 		if( device[index].vpn == 0 )
 		{
-//			route( buf , len ) ;
-//			ether_send( buf , len , dst ) ;
 			ip_sed_process(buf , len , 0 , dst ) ;
 		}
 		else // 是vpn ,要先包 zhuang 再转发
 		{
-			printf("vpn pack start\n\n");
 //			check_vpn_route( ip1->dst_addr , &dst ) ;
-			stdshowip(dst );
+//			stdshowip(dst );
+
 			ip_sed_process(buf , len , 0 , ip1->dst_addr ) ;
-		}
-		
+		}		
 		return ;
 	}
 //  是的话继续判断 是否有vpn
@@ -222,9 +214,14 @@ void ip_rec_process( _U8 *buf , int len)
 //  解包 找出目的地址
 
 //  在解包中应当包含路由 , 且在vpn_dst 中应当包含下一跳地址
+	offset += (ip1->head_len*4) ;
 	if( ip1->protocal == IP_PROTOPPTP )
 	{		
-		mark =unpack_vpn( buf+offset , len- offset , &vpn_src , &vpn_dst ) ;
+
+		len -= offset ;
+		mark = unpack_vpn( buf+offset , &len , &vpn_src , &vpn_dst ) ;
+printf("mark %d \n", mark) ;
+		
 		if( mark < 0 )
 		{
 			printf(" error 1 : in function ip_rec_process \n");
@@ -234,17 +231,12 @@ void ip_rec_process( _U8 *buf , int len)
 		{
 //   填 0 是因为这里应该放自己的 ip
 			
-			ip_sed_process( buf+offset , len-offset , 0 , vpn_dst ) ;
+			ip_sed_process( buf+offset , len , 0 , vpn_dst ) ;
 			return ;
 		}
-		else if( mark == 2 )  // 发现是给自己的
+		else if( mark == 2 )
 		{
-			getmessage( buf+offset , len-offset , src ) ;
-			return ;
-		}
-		else if( mark == 2 )  // 需要转发的
-		{
-			ether_send( buf , len , vpn_dst ) ;
+			getmessage( buf+offset , len , src ) ;
 			return ;
 		}
 	}
@@ -262,6 +254,7 @@ void ip_rec_process( _U8 *buf , int len)
 //  在这里只需要传递上一层的目标地址,是否要添加vpn在ip_sed_process里面决定
 void ip_sed_process( _U8 *buf , int len , _U32 src , _U32 dst )
 {
+
 	static _U8 buff[4096] ;
 	int up_vpn = 0 , dst1 = dst ;
 	
@@ -279,40 +272,44 @@ void ip_sed_process( _U8 *buf , int len , _U32 src , _U32 dst )
 	{
 		printf("starr repack in ip_sed_process\n");
 //		check_vpn_route( dst1 , &dst ) ;
-		stdshowip( dst1 );
+//		stdshowip( dst1 );
 		memcpy( buff + sizeof(struct myethhdr) + sizeof(struct ip4hdr) , buf , len );
+showpacket( buff , len +20+14 );
+printf("\n");
 		repack_vpn( &src , &dst1 , buff + sizeof(struct myethhdr) , len ) ;
+showpacket( buff , len +20+14 );
+printf("\n");
 		up_vpn = 1;
 //  因为在repack函数中 dst1已经被改变
-//		index = reroute( dst1 , &dst );
 		len += 20 ;
+printf("len : %d \n" , len );
 	}
 	else
 	{
 		memcpy( buff + sizeof(struct myethhdr) , buf , len );
 	}
-/*
-//  判断一下是什么协议
-	if( up_vpn == 1 )
-		ip_pack( buff+14, 20 , len+20 , 0 ,0,60,IP_PROTOPPTP, src ,dst );	
-	else
-		ip_pack( buff+14, 20 , len+20 , 0 ,0,60,IP_PROTORAW, src ,dst );
-*/
 
 	struct myethhdr* eth = ( struct myethhdr* )( buff ) ;
 	eth->h_proto = htons( 0x0800 ) ;
 
 	getnetcard( dst1 , &index ) ;
 	printf("index : %d \n", index);
-printf("-------\n");
-stdshowip( dst1 ) ;
 	int netcard = search_arp_cache( dst1 ) ;
+	
+	if( netcard < 0 )
+	{
+		printf("not arp \n");
+		add_to_arp_wait_buffer( buff , len+14 , dst1 ) ;
+		return ;
+	}
+
 	printf("netcard: %d \n", netcard);
 	memcpy( buff , arp_table[netcard].mac_addr , 6 );
 	memcpy( buff+6 , device[index].mac_addr , 6 ) ;
  
 	len += 14 ;
 	showpacket( buff , len ) ;
+
 	sendto( socket_array[index] , buff , len , 0 , (struct sockaddr *)&send_addr[index] , sizeof( send_addr[index] ) );
 
 }
@@ -335,8 +332,9 @@ void showpacket( char *buf , int len)
 int whether_ip_me( _U32 addr )
 {
 	int i;
-	for(i=0; i<vpn_route_index ; i++ ) 
+	for(i=0; i<device_index ; i++ ) 
 	{
+
 		if( cmp_ip_net_mask(addr , device[i].ip , device[i].netmask  ) )
 		{
 			return 1 ;
@@ -350,31 +348,11 @@ int whether_ip_me( _U32 addr )
 void getmessage( _U8 *buf , int len , _U32 src )
 {
 	buf[ len ] = 0 ;
-	printf("from  ");
-	stdshowip( src );
-	printf("length : %d \n%s\n" ,len , buf );
+//	printf("from  ");
+//	stdshowip( src );
+//	printf("length : %d \n%s\n" ,len , buf );
 }
 
-void ether_send( _U8* buf , int len , _U32 dst )
-{
-	_U8 buff[4096] ;
-	memcpy( buff+14 , buf , len ) ;
-
-	struct myethhdr* eth = ( struct myethhdr* )( buff ) ;
-	eth->h_proto = htons( 0x0800 ) ;
-
-	int index ;
-
-	int arp_num = search_arp_cache( dst ) ;
-
-	memcpy( buff , arp_table[arp_num].mac_addr , 6 );
-	memcpy( buff+6 , device[index].mac_addr , 6 ) ;
- 
-	len += 14 ;
-
-//	sendto( socket_array[index] , buff , len , 0 , (struct sockaddr *)&send_addr[index] , sizeof( send_addr[index] ) );
-
-}
 
 int selnetcard( _U32 addr )
 {
@@ -403,7 +381,7 @@ int getnetcard( _U32 addr , _U32 *num )
 }
 
 
-int add_to_arp_wait_buffer( _U8 *buf , int len , _U8 mac[]  )
+int add_to_arp_wait_buffer( _U8 *buf , int len , _U32 ip  )
 {
 	int i ;
 	for(i=0;i<10 ;i++ )
@@ -412,27 +390,22 @@ int add_to_arp_wait_buffer( _U8 *buf , int len , _U8 mac[]  )
 			continue ;
 		memcpy( arp_wait_buf[i] , buf , len );
 		arp_wait_len[i] = len ;
-		memcpy( arp_wait_mac , mac , 6 ) ;
+		arp_wait_ip[i] = ip ;
 		arp_valid[i] = 1 ;
 		return 1 ;
 	}
 	return -1 ;
 }
 
-int check_arp_wait_buffer( _U8 *buf , int *len , _U8 mac[] )
+int check_arp_wait_buffer( _U8 *buf , int *len , _U32 addr )
 {
-	int mark = 0 ;
 	int i,j;
 	for( i=0;i<10 ; i++ )
 	{
 		if( !arp_valid[i] )
 			continue ;
 		i = ( i+1 )% 10 ;
-		mark = 0 ;
-		for( j=0;j<6;j++ )
-			if( mac[j] != arp_wait_buf[i][j] )
-				mark = 1 ;
-		if( mark == 1 )
+		if( arp_wait_ip[i] == addr )
 		{
 			memcpy( buf , arp_wait_buf[i] , arp_wait_len[i] ) ;
 			*len = arp_wait_len[i] ;
@@ -446,19 +419,34 @@ int check_arp_wait_buffer( _U8 *buf , int *len , _U8 mac[] )
 int handle_arp( _U8 *buf , int len )
 {
 	struct arp_msg *arp = ( struct arp_msg *)( buf + 14  ) ;
+	_U8 buff[4096] ;
+	int length ;
+	int index ;
 	if( htons(arp->op) == ARP_REQUEST )
 	{
 		;//send
 	}
 	else if( htons(arp->op ) == ARP_REPLY )
 	{
-		;
+		struct myethhdr *phl = (struct myethhdr	*)buf ;
+		struct arp_msg *arp = (struct arp_msg *)( buf + sizeof( struct myethhdr ) ) ;
+		add_arp_item( arp->src_ip , arp->src_mac ) ;
+		while( check_arp_wait_buffer( buff , &length , arp->src_ip ) > 0 )
+		{
+			if( getnetcard(  arp->src_ip , &index )  > 0 )
+			{
+				memcpy( buff+6  , device[index].mac_addr , 6 ) ;
+				memcpy( buff  , arp->src_mac , 6 ) ;
+				sendto( socket_array[index] , buff , len , 0 , (struct sockaddr *)&send_addr[index] , sizeof( send_addr[index] ) );
+			}
+		}
 	}
 }
 
 void add_arp_item( _U32 addr , _U8 mac[] )
 {
-//	arp_table[ arp_item_index ].
+	arp_table[ arp_item_index ].ip_addr = addr ;
+	memcpy( arp_table[arp_item_index].mac_addr , mac , 6 ) ;
 	arp_item_index ++ ;
 }
 

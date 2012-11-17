@@ -43,7 +43,7 @@ void route( char *buf , int len )
 }
 
 
-#define NETCARD1 "eth4"
+
 int mysend1(  char *buff , int len )
 {
 
@@ -286,7 +286,6 @@ void *handle_packet(void *data)
  				break;
 			case eth_ARP:
 				printf("arp\n");
-				handle_arp( buf+14 , n_read-14 );
 			//	showarp( buf , n_read );
 			//	arp_reply( buf , n_read, device[1].mac_addr , inet_addr("192.168.1.1"));
 				break;

@@ -171,8 +171,8 @@ void initial_route()
 
 
 	add_route( inet_addr( "192.168.1.0" ) , inet_addr( "192.168.1.1" ) , inet_addr("255.255.255.0") , "eth4" ) ;
-	add_route( inet_addr( "192.168.2.0" ) , inet_addr( "192.168.2.2" ) , inet_addr("255.255.255.0") , "eth5" ) ;
-	add_route( inet_addr( "192.168.3.0" ) , inet_addr( "192.168.10.2" ) , inet_addr("255.255.255.0") , "vpn_eth0" ) ;
+	add_route( inet_addr( "192.168.2.0" ) , inet_addr( "192.168.2.10" ) , inet_addr("255.255.255.0") , "eth5" ) ;
+	add_route( inet_addr( "192.168.3.0" ) , inet_addr( "192.168.3.2" ) , inet_addr("255.255.255.0") , "vpn_eth0" ) ;
 //  "192.168.10.2" not use
 
 
@@ -183,15 +183,15 @@ void initial_route()
 	arp_table[0].mac_addr[3] = 0x6c ;
 	arp_table[0].mac_addr[4] = 0x35 ;
 	arp_table[0].mac_addr[5] = 0xc5 ;	
-	*(_U32 *)arp_table[0].ip_addr = inet_addr( "192.168.2.10" ); 
+	arp_table[0].ip_addr = inet_addr( "192.168.2.10" ); 
 	arp_item_index ++ ;
 	arp_table[1].mac_addr[0] = 0x00 ;
 	arp_table[1].mac_addr[1] = 0x0c ;
 	arp_table[1].mac_addr[2] = 0x29 ;
-	arp_table[1].mac_addr[3] = 0x61 ;
-	arp_table[1].mac_addr[4] = 0x1a ;
-	arp_table[1].mac_addr[5] = 0xda ;	
-	*(_U32 *)arp_table[1].ip_addr = inet_addr( "192.168.1.2" ); 
+	arp_table[1].mac_addr[3] = 0xde ;
+	arp_table[1].mac_addr[4] = 0xdb ;
+	arp_table[1].mac_addr[5] = 0xeb ;	
+	arp_table[1].ip_addr = inet_addr( "192.168.1.1" ); 
 	arp_item_index ++ ;
 
 
@@ -210,8 +210,8 @@ int whether_inout( _U8 *addr )    // mac
 	
 	for( i=0;i<device_index ; i++ )
 	{
-		stdshowmac( addr );
-		stdshowmac( device[i].mac_addr ) ;
+//		stdshowmac( addr );
+//		stdshowmac( device[i].mac_addr ) ;
 
 		mark=0;
 		for( j=0;j<6;j++ )
@@ -265,12 +265,12 @@ int reroute( _U32 addr , _U32 *dst  )  // ip
 }
 
 
-int search_arp_cache( int addr )
+int search_arp_cache( _U32 addr )
 {
 	int i=0;
 	for( i=0;i< arp_item_index ;i ++ )
 	{
-		if( *(_U32 *)arp_table[i].ip_addr == addr )
+		if( arp_table[i].ip_addr == addr )
 			return i ;
 	}
 	return -1;
@@ -403,60 +403,6 @@ void showarp( char *buf , int len )
 
 }
 
-
-
-void arp_request( int addr , char *MAC , int IP  )   //  
-{
-	char buf[ 61 ];     // 一般搜不用整10 防止使用了strcpy什么的覆盖越界
-	struct myethhdr *phl = (struct myethhdr	*)buf ;
-	struct arp_msg *arp = (struct arp_msg *)( buf + sizeof( struct myethhdr ) ) ;
-	memset( phl->h_dest , 0xff , 6);
-	memcpy( phl->h_source , MAC  , 6 );
-
-	phl->h_proto = htons( eth_ARP);
-
-	arp->hw_type = htons( 1 ) ;    // 表示以太网
-	arp->protocal_type = htons( eth_ARP ) ;
-
-	arp->hw_size = 6 ;
-	arp->protocal_size = 4 ;
-	arp->op= htons( ARP_REQUEST );
-	memcpy( arp->src_mac , MAC , 6 ) ;
-	arp->src_ip = IP ;
-	memset( arp->dst_mac , 0 , arp->protocal_size );
-	arp->dst_ip = addr ;
-	
-	int index ;
-	getnetcard( addr , &index ) ;
-	
-	sendto( socket_array[index] , buf , 60 , 0 , (struct sockaddr *)&send_addr[index] , sizeof( send_addr[index] ) ) ;
-
-}
-
-void arp_reply( char *buff , int len , char *MAC , int IP )
-{
-	struct myethhdr *phl = (struct myethhdr	*)buff ;
-	struct arp_msg *arp = (struct arp_msg *)( buff + sizeof( struct myethhdr ) ) ;
-	
-	char send_buf[61] ;
-	struct myethhdr *phl1 = (struct myethhdr	*)send_buf ;
-	struct arp_msg *arp1 = (struct arp_msg *)( send_buf + sizeof( struct myethhdr ) ) ;
-	memcpy( phl1->h_source , MAC , 6 ) ;
-	memcpy(phl1->h_dest , phl->h_source , 6 );
-
-	phl1->h_proto = phl->h_proto;
-
-	arp1->hw_type = htons( 1 );
-	arp1->protocal_type = htons( eth_ARP ) ;
-	arp1->hw_size = 6 ;
-	arp1->protocal_size = 4 ;
-	arp1->op = htons( ARP_REPLY ) ;
-	memcpy( arp1->src_mac , MAC , 6 )  ;
-	arp1->src_ip =  IP ;
-	memcpy( arp1->dst_mac , arp->src_mac , 6) ;
-	arp1->dst_ip = arp->src_ip ;
-
-}
 
 
 

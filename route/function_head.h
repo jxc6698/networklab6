@@ -11,14 +11,12 @@ void tcp_pack( _U8 *buf , int len , int hlen , _U16 sport ,_U16 dport,int snum ,
 void ip_pack( _U8 *buf , int len , int total_len , int id , int flag , int time , int protocal , int src , int dst );
 
 int repack_vpn( _U32 *addr_src , _U32 *addr , _U8 *buf , int len ) ;
-int uppack_vpn(_U8 *buf , _U32 len , _U32 *src, _U32 *dst );
+int uppack_vpn(_U8 *buf , _U32 *len , _U32 *src, _U32 *dst );
 
 
 
 void ip_sed_process( _U8 *buf , int len , _U32 src ,_U32 dst ) ;
 void ip_rec_process( _U8 *buf , int len) ;
-// dst : next hop ip
-void ether_send( _U8*  buf , int len , _U32  dst ) ;
 
 
 
@@ -57,13 +55,13 @@ void initial_pthread_pipe() ;
 
 // arp缓存
 
-int check_arp_wait_buffer( _U8 *buf , int *len , _U8 mac[] ) ;
-int add_to_arp_wait_buffer( _U8 *buf , int len ,_U8 mac[] ) ;
+int check_arp_wait_buffer( _U8 *buf , int *len , _U32 ip ) ;
+int add_to_arp_wait_buffer( _U8 *buf ,int len ,_U32 addr ) ;
 
 int handle_arp( _U8 *buf, int len ) ;
 void arp_reply( char *buff , int len , char *MAC , int IP );
 void arp_request( int addr , char *MAC , int IP  );
-
+void add_arp_item( _U32 addr , _U8 mac[] ) ;
 
 
 #endif

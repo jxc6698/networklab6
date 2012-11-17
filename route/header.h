@@ -171,8 +171,8 @@ void initial_route()
 
 
 	add_route( inet_addr( "192.168.1.0" ) , inet_addr( "192.168.1.1" ) , inet_addr("255.255.255.0") , "eth4" ) ;
-	add_route( inet_addr( "192.168.2.0" ) , inet_addr( "192.168.2.2" ) , inet_addr("255.255.255.0") , "eth5" ) ;
-	add_route( inet_addr( "192.168.3.0" ) , inet_addr( "192.168.10.2" ) , inet_addr("255.255.255.0") , "vpn_eth0" ) ;
+	add_route( inet_addr( "192.168.2.0" ) , inet_addr( "192.168.2.10" ) , inet_addr("255.255.255.0") , "eth5" ) ;
+	add_route( inet_addr( "192.168.3.0" ) , inet_addr( "192.168.3.2" ) , inet_addr("255.255.255.0") , "vpn_eth0" ) ;
 //  "192.168.10.2" not use
 
 
@@ -183,15 +183,15 @@ void initial_route()
 	arp_table[0].mac_addr[3] = 0x6c ;
 	arp_table[0].mac_addr[4] = 0x35 ;
 	arp_table[0].mac_addr[5] = 0xc5 ;	
-	*(_U32 *)arp_table[0].ip_addr = inet_addr( "192.168.2.10" ); 
+	arp_table[0].ip_addr = inet_addr( "192.168.2.10" ); 
 	arp_item_index ++ ;
 	arp_table[1].mac_addr[0] = 0x00 ;
 	arp_table[1].mac_addr[1] = 0x0c ;
 	arp_table[1].mac_addr[2] = 0x29 ;
-	arp_table[1].mac_addr[3] = 0x61 ;
-	arp_table[1].mac_addr[4] = 0x1a ;
-	arp_table[1].mac_addr[5] = 0xda ;	
-	*(_U32 *)arp_table[1].ip_addr = inet_addr( "192.168.1.2" ); 
+	arp_table[1].mac_addr[3] = 0xde ;
+	arp_table[1].mac_addr[4] = 0xdb ;
+	arp_table[1].mac_addr[5] = 0xeb ;	
+	arp_table[1].ip_addr = inet_addr( "192.168.1.1" ); 
 	arp_item_index ++ ;
 
 
@@ -210,8 +210,8 @@ int whether_inout( _U8 *addr )    // mac
 	
 	for( i=0;i<device_index ; i++ )
 	{
-		stdshowmac( addr );
-		stdshowmac( device[i].mac_addr ) ;
+//		stdshowmac( addr );
+//		stdshowmac( device[i].mac_addr ) ;
 
 		mark=0;
 		for( j=0;j<6;j++ )
@@ -265,12 +265,12 @@ int reroute( _U32 addr , _U32 *dst  )  // ip
 }
 
 
-int search_arp_cache( int addr )
+int search_arp_cache( _U32 addr )
 {
 	int i=0;
 	for( i=0;i< arp_item_index ;i ++ )
 	{
-		if( *(_U32 *)arp_table[i].ip_addr == addr )
+		if( arp_table[i].ip_addr == addr )
 			return i ;
 	}
 	return -1;
@@ -402,9 +402,6 @@ void showarp( char *buf , int len )
 
 
 }
-
-
-
 
 
 

@@ -22,6 +22,6 @@ int ip_tcp[2];
 
 _U8 arp_wait_buf[10][4096] ;
 int arp_wait_len[10] ;
-_U8 arp_wait_mac[10][6] ;
+_U32 arp_wait_ip[10] ; 
 int arp_valid[10] ;
 
