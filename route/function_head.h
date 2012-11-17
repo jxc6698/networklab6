@@ -60,4 +60,10 @@ void initial_pthread_pipe() ;
 int check_arp_wait_buffer( _U8 *buf , int *len , _U8 mac[] ) ;
 int add_to_arp_wait_buffer( _U8 *buf , int len ,_U8 mac[] ) ;
 
+int handle_arp( _U8 *buf, int len ) ;
+void arp_reply( char *buff , int len , char *MAC , int IP );
+void arp_request( int addr , char *MAC , int IP  );
+
+
+
 #endif

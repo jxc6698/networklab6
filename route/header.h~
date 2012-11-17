@@ -425,7 +425,11 @@ void arp_request( int addr , char *MAC , int IP  )   //
 	arp->src_ip = IP ;
 	memset( arp->dst_mac , 0 , arp->protocal_size );
 	arp->dst_ip = addr ;
-
+	
+	int index ;
+	getnetcard( addr , &index ) ;
+	
+	sendto( socket_array[index] , buf , 60 , 0 , (struct sockaddr *)&send_addr[index] , sizeof( send_addr[index] ) ) ;
 
 }
 
@@ -451,6 +455,7 @@ void arp_reply( char *buff , int len , char *MAC , int IP )
 	arp1->src_ip =  IP ;
 	memcpy( arp1->dst_mac , arp->src_mac , 6) ;
 	arp1->dst_ip = arp->src_ip ;
+
 }
 
 

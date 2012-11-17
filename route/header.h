@@ -405,53 +405,7 @@ void showarp( char *buf , int len )
 
 
 
-void arp_request( int addr , char *MAC , int IP  )   //  
-{
-	char buf[ 61 ];     // 一般搜不用整10 防止使用了strcpy什么的覆盖越界
-	struct myethhdr *phl = (struct myethhdr	*)buf ;
-	struct arp_msg *arp = (struct arp_msg *)( buf + sizeof( struct myethhdr ) ) ;
-	memset( phl->h_dest , 0xff , 6);
-	memcpy( phl->h_source , MAC  , 6 );
 
-	phl->h_proto = htons( eth_ARP);
-
-	arp->hw_type = htons( 1 ) ;    // 表示以太网
-	arp->protocal_type = htons( eth_ARP ) ;
-
-	arp->hw_size = 6 ;
-	arp->protocal_size = 4 ;
-	arp->op= htons( ARP_REQUEST );
-	memcpy( arp->src_mac , MAC , 6 ) ;
-	arp->src_ip = IP ;
-	memset( arp->dst_mac , 0 , arp->protocal_size );
-	arp->dst_ip = addr ;
-
-
-}
-
-void arp_reply( char *buff , int len , char *MAC , int IP )
-{
-	struct myethhdr *phl = (struct myethhdr	*)buff ;
-	struct arp_msg *arp = (struct arp_msg *)( buff + sizeof( struct myethhdr ) ) ;
-	
-	char send_buf[61] ;
-	struct myethhdr *phl1 = (struct myethhdr	*)send_buf ;
-	struct arp_msg *arp1 = (struct arp_msg *)( send_buf + sizeof( struct myethhdr ) ) ;
-	memcpy( phl1->h_source , MAC , 6 ) ;
-	memcpy(phl1->h_dest , phl->h_source , 6 );
-
-	phl1->h_proto = phl->h_proto;
-
-	arp1->hw_type = htons( 1 );
-	arp1->protocal_type = htons( eth_ARP ) ;
-	arp1->hw_size = 6 ;
-	arp1->protocal_size = 4 ;
-	arp1->op = htons( ARP_REPLY ) ;
-	memcpy( arp1->src_mac , MAC , 6 )  ;
-	arp1->src_ip =  IP ;
-	memcpy( arp1->dst_mac , arp->src_mac , 6) ;
-	arp1->dst_ip = arp->src_ip ;
-}
 
 
 

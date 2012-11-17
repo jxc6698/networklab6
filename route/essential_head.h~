@@ -199,8 +199,6 @@ struct vpn_route_table{
 //  与使用相关的宏
 
 
-#define NETCARD1   "eth5"  //  用于send
-#define NETCARD2   "eth4"  //  用于receive
 
 #define stdshowip( x )  	printf("des:  %d:%d:%d:%d\n",_getip(x,1) ,_getip(x,2) ,_getip(x,3) ,_getip(x,4) );
 #define stdshowmac( x )          printf("sender MAC:%02x:%02x:%02x:%02x:%02x:%02x\n",(_U8)x[0],(_U8)x[1],(_U8)x[2],(_U8)x[3],(_U8)x[4],(_U8)x[5] );    
