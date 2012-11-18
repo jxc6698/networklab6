@@ -51,7 +51,7 @@ void initial_pthread_pipe()
 	}
 }
 
-void tcp_pack( _U8 *buf , int len , int hlen , _U16 sport ,_U16 dport,int snum , int acknum,int flag1,int flag2 , _U16 size , _U16 point , _U32 src , _U32 dst )
+void tcp_pack( _U8 *buf , int len , int hlen , _U16 sport ,_U16 dport,int snum , int acknum,_U32 flag , _U16 size , _U16 point , _U32 src , _U32 dst )
 {
 	struct tcp_hdr *tcp = (struct tcp_hdr *)( buf );
 	static _U8 buff[4096] ;
@@ -61,9 +61,9 @@ void tcp_pack( _U8 *buf , int len , int hlen , _U16 sport ,_U16 dport,int snum ,
 	tcp->sequence_num = snum ;
 	tcp->ack_num = acknum ;
 //  需要详细改 用 switch
-	tcp->unknown1 = flag1 ;
+	tcp->unknown1 = (flag&0x0f00)>>8 ;
 	tcp->head_len = hlen/4 ;
-	tcp->unknown2 = flag2 ;
+	tcp->unknown2 = flag&0x00ff ;
 
 	tcp->windows_size = size ;
 	tcp->emergency_point = point ;
@@ -78,6 +78,47 @@ void tcp_pack( _U8 *buf , int len , int hlen , _U16 sport ,_U16 dport,int snum ,
 	pes->len = ntohs(len) ;
 	tcp->csum = in_cksum( (_U16*)buff , len+12 ) ;
 }
+
+void tcp_unpack( _U8 *buf , int len , int *hlen , _U16 *sport ,_U16 *dport,int *snum , int *acknum,_U32 *flag , _U16 *size , _U16 *point , _U32 src , _U32 dst )
+{
+	struct tcp_hdr *tcp = (struct tcp_hdr *)( buf );
+	static _U8 buff[4096] ;
+	int csum = tcp->csum ;
+	
+	memcpy( buff+12 , buf , len ) ;
+
+	tcp->csum = 0 ;
+
+	struct pesudo_hdr *pes = (struct pesudo_hdr *)( buff ) ;
+//  这里进行计算的时候我觉得应该是网络序（但是没有测试）
+	pes->saddr = htonl(src) ;
+	pes->daddr = htonl(dst) ;
+	pes->unused = 0 ;
+	pes->protocal = IPPROTO_TCP ;    //
+	pes->len = ntohs(len) ;
+	tcp->csum = in_cksum( (_U16*)buff , len+12 ) ;
+
+	if( tcp->csum != csum )
+	{
+		printf("csum error in function tcp_unpack\n") ;
+	} 
+/*
+	tcp->src_port = htons(sport) ;
+	tcp->dst_port = htons(dport) ;
+	tcp->sequence_num = snum ;
+	tcp->ack_num = acknum ;
+//  需要详细改 用 switch
+	tcp->unknown1 = (flag&0x0f00)>>8 ;
+	tcp->head_len = hlen/4 ;
+	tcp->unknown2 = flag&0x00ff ;
+
+	tcp->windows_size = size ;
+	tcp->emergency_point = point ;
+*/
+
+}
+
+
 
 void ip_pack( _U8 *buf , int len , int total_len , int id , int flag , int time , int protocal , int src , int dst )
 {
@@ -347,6 +388,7 @@ int whether_ip_me( _U32 addr )
 void getmessage( _U8 *buf , int len , _U32 src )
 {
 	buf[ len ] = 0 ;
+	printf("in the getmessage functino\n");
 //	printf("from  ");
 //	stdshowip( src );
 //	printf("length : %d \n%s\n" ,len , buf );
