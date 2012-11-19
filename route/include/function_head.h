@@ -3,8 +3,8 @@
 
 #include "essential_data.h"
 
-extern void *ip_handle_thread( void *data) ;
-extern void *vpn_ip_handle_thread( void *data) ;
+void *tcp_handle_thread(void *data) ;
+
 unsigned short in_cksum(unsigned short *addr, int len) ;
 void tcp_pack( _U8 *buf , int len , int hlen , _U16 sport ,_U16 dport,int snum , int acknum,_U32 flag , _U16 size , _U16 point , _U32 src , _U32 dst ) ;
 
@@ -65,6 +65,20 @@ int handle_arp( _U8 *buf, int len ) ;
 void arp_reply( char *buff , int len , char *MAC , int IP );
 void arp_request( int addr , char *MAC , int IP  );
 void add_arp_item( _U32 addr , _U8 mac[] ) ;
+
+
+// 这里还不知道是不是 该有返回值
+// 这里有两种实现， 一种是分开写一种是合在一起写然后在在读的时候分离
+// 然后给参数传出 void * 型指针
+// 为了以后分离 和 为了利用op来进行判断 switch
+// 想到了 op 是在switch 之前读的
+void readpipe( _U32 *op , void *argv , _U8 *buf , int x ) ;  // x = protopipe[0]
+
+void writepipe( _U32 op , void *argv , _U8 *buf , int x ) ;  // x = protopipe[1]
+
+
+int lock( int x );
+int unlock( int x ) ;
 
 
 #endif
