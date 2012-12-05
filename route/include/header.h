@@ -371,7 +371,7 @@ void showicmp( _U8 *buf , int len )
 	ip->csum=0;
 	ip->csum = in_cksum( (_U16 *)ip , ip->head_len*4 ) ;
 
-	mysend1( buf , len ) ;
+//	mysend1( buf , len ) ;
 	
 //	showpacket( buf , leng );
 

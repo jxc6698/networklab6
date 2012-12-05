@@ -4,6 +4,7 @@
 
 #include "essential_head.h"
 #include "mylock.h"
+#include "message.h"
 
 extern int socket_array[MAX_DEVICE] ;
 extern struct sockaddr_ll send_addr[MAX_DEVICE] ;

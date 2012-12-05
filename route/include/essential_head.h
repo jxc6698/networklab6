@@ -32,6 +32,10 @@
 #include <errno.h>
 #include <pthread.h>
 
+#include <sys/stat.h>
+#include <sys/msg.h>
+
+
 #include "typess.h"
 
 #ifndef ETHALEN

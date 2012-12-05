@@ -1,6 +1,6 @@
 #include "essential_data.h"
 #include "function_head.h"
-#include "header.h"
+#include "header.h"p
 #include "multithread.h"
 
 
@@ -18,7 +18,7 @@ void route( char *buf , int len )
 	
 
 //  查表获取mac
-	_U32 dst ;
+	_U32 dst ;p
 	int index = reroute( ip->dst_addr , &dst )	;  // 都是网络序
 
 	stdshowip( ip->dst_addr ) ;
@@ -43,7 +43,7 @@ void route( char *buf , int len )
 }
 
 
-
+/*
 int mysend1(  char *buff , int len )
 {
 
@@ -51,7 +51,7 @@ int mysend1(  char *buff , int len )
     int n_write;        
     int n_res;
     
-    struct sockaddr_ll sll;
+    struct sockaddr_ll sll;p
     struct ifreq ifstruct;
 
     char MAC_BUFFER[12]= {0x00,0x0c,0x29,0x75,0x72,0xea,0x00,0x0c,0x29,0x61,0x1a,0xda };
@@ -132,7 +132,7 @@ int mysend1(  char *buff , int len )
 			printf("%d\n",n_write);
         }
 }
-
+*/
 
 
 

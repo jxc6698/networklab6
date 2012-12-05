@@ -3,9 +3,9 @@ CC = gcc
 CFLAGS = -lpthread  -I./include
 LDFLAGS = -e main
 
-objects = function/function_head.o route.o  essential/essential_data.o
+objects = function/function_head.o route.o  essential/essential_data.o message/message.o
 
-headerfile = mylock.h essential_head.h essential_data.h function_head.h multithread.h typess.h header.h arp.h
+headerfile = mylock.h essential_head.h essential_data.h function_head.h multithread.h typess.h header.h arp.h message.h
 
 
 target: $(objects) 
