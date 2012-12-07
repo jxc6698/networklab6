@@ -86,6 +86,29 @@ struct udp_hdr{
 	unsigned short csum ;
 }__attribute__((packed));
 
+struct tcp_hdr{
+	unsigned short src_port ;
+	unsigned short dst_port ;
+	unsigned  sequence_num ;
+	unsigned  ack_num ;
+//	unsigned  unknown1 : 4 ;
+	_U32	res1: 3 ;
+	_U32    non : 1 ;
+	unsigned  head_len : 4 ;   // tcp_head 的大小 in 32bits  5-15
+//	unsigned  unknown2 : 8 ;
+	_U32	fin:1 ;
+	_U32	syn:1 ;
+	_U32	rst:1 ;
+	_U32	psh:1 ;
+	_U32	ack:1 ;
+	_U32	urg:1 ;
+	_U32	ecn:1 ;
+	_U32	cwr:1 ;
+	unsigned short windows_size ;
+	unsigned short csum ;
+	unsigned short emergency_point;
+}__attribute__((packed));
+/*
 // tcp
 struct tcp_hdr{
 	unsigned short src_port ;
@@ -100,6 +123,8 @@ struct tcp_hdr{
 	unsigned short emergency_point;
 //	unsigned char optino[12] ;
 }__attribute__((packed));
+*/
+
 #define TCP_FIN  0x0001
 #define TCP_SYN  0x0002
 #define TCP_RST  0x0004
@@ -108,7 +133,7 @@ struct tcp_hdr{
 #define TCP_URG  0x0020		// Urgent
 #define TCP_ECN  0x0040		// Ecn echo
 #define TCP_CWR  0x0080		// congestion
-#define TcP_NON  0x0100		// Nonce
+#define TCP_NON  0x0100		// Nonce
 
 
 // arp 
@@ -130,7 +155,7 @@ struct arp_msg{
 #define PROTO_ARP 0x0800
 #define ARP_REQUEST   1
 #define ARP_REPLY  2
-// SHA  sender hardware address 
+// SHA  sender hardware ad
 // SPA  sender protocal address
 
 

@@ -50,9 +50,27 @@ void tcp_pack( _U8 *buf , int len , int hlen , _U16 sport ,_U16 dport,int snum ,
 	tcp->sequence_num = snum ;
 	tcp->ack_num = acknum ;
 //  需要详细改 用 switch
-	tcp->unknown1 = (flag&0x0f00)>>8 ;
+//	tcp->unknown1 = (flag&0x0f00)>>8 ;
 	tcp->head_len = hlen/4 ;
-	tcp->unknown2 = flag&0x00ff ;
+//	tcp->unknown2 = flag&0x00ff ;
+	if( flag & TCP_FIN )
+		tcp->fin = 1 ;
+	if( flag & TCP_SYN )
+		tcp->fin = 1 ;
+	if( flag & TCP_RST )
+		tcp->rst = 1 ;
+	if( flag & TCP_PSH )
+		tcp->psh = 1 ;
+	if( flag & TCP_ACK )
+		tcp->ack = 1 ;
+	if( flag & TCP_URG )
+		tcp->urg = 1 ;
+	if( flag & TCP_ECN )
+		tcp->ecn = 1 ;
+	if( flag & TCP_CWR )
+		tcp->cwr = 1 ;
+	if( flag & TCP_NON )
+		tcp->non = 1 ;
 
 	tcp->windows_size = size ;
 	tcp->emergency_point = point ;
@@ -97,6 +115,24 @@ void tcp_unpack( _U8 *buf , int len , int *hlen , _U16 *sport ,_U16 *dport,int *
 	tcp->sequence_num = snum ;
 	tcp->ack_num = acknum ;
 //  需要详细改 用 switch
+	if( tcp->fin )
+		flag |= TCP_FIN ;
+	if( tcp->syn )
+		flag |= TCP_SYN ;
+	if( tcp->rst )
+		flag |= TCP_RST ;
+	if( tcp->psh )
+		flag |= TCP_PSH ;
+	if( tcp->ack )
+		flag |= TCP_ACK ;
+	if( tcp->urg )
+		flag |= TCP_URG ;
+	if( tcp->ecn )
+		flag |= TCP_ECN ;
+	if( tcp->cwr )
+		flag |= TCP_CWR ;
+	if( tcp->non )
+		flag |= TCP_NON ;
 	tcp->unknown1 = (flag&0x0f00)>>8 ;
 	tcp->head_len = hlen/4 ;
 	tcp->unknown2 = flag&0x00ff ;
@@ -119,6 +155,7 @@ void ip_pack( _U8 *buf , int len , int total_len , int id , int flag , int time 
 	ip->id = ntohs(id) ;
 	ip->frag_off = flag ;
 	ip->protocal = protocal ;
+	ip->time = 64 ;
 	ip->src_addr = src ;
 	ip->dst_addr = dst ;
 	ip->csum = 0 ;

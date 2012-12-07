@@ -2,7 +2,7 @@
 #include "function_head.h"
 #include "header.h"p
 #include "multithread.h"
-
+//#include "tcp.h"
 
 void route( char *buf , int len )
 {
@@ -18,7 +18,7 @@ void route( char *buf , int len )
 	
 
 //  查表获取mac
-	_U32 dst ;p
+	_U32 dst ;
 	int index = reroute( ip->dst_addr , &dst )	;  // 都是网络序
 
 	stdshowip( ip->dst_addr ) ;
@@ -177,7 +177,7 @@ int initial()
 // 树吃化静态路由   arp表项
 	initial_route() ;	
 	init_mutithread();     // mutitherad support
-	
+	tcp_initial();
 
 	int i,sock;
 	struct sockaddr_ll sll;
@@ -231,7 +231,14 @@ int initial()
 		socket_array[i] = sock ;
 		send_addr[i] = sll ;
 	}
+
+	tcp_first_step();
 }
+
+
+
+
+
 
 void *handle_packet(void *data)
 {

@@ -323,7 +323,7 @@ void showtcp( char *buf )
 
 	printf("  src port : %d (%04x)	dst port : %d (%04x)\n",htons(tcp->src_port),htons(tcp->src_port),htons(tcp->dst_port),htons(tcp->dst_port) ) ;
 	printf(" sequence_num   : %d	ack_num : %d \n" ,tcp->sequence_num ,tcp->ack_num ); 
-	printf(" head_len       : %d	unknown1: %d \n" , tcp->head_len , tcp->unknown1 );
+	printf(" head_len       : %d\n" , tcp->head_len*4);
 	printf(" windows size   : %d	\n" , tcp->windows_size );
 	printf(" csum           : %d ( %x) \n" ,tcp->csum ,(tcp->csum) );
 	printf(" emergency point: %d \n" , tcp->emergency_point ) ;

@@ -3,6 +3,9 @@
 
 #include "essential_data.h"
 
+
+
+
 void *tcp_handle_thread(void *data) ;
 
 unsigned short in_cksum(unsigned short *addr, int len) ;
@@ -79,6 +82,8 @@ void writepipe( _U32 op , void *argv , _U8 *buf , int x ) ;  // x = protopipe[1]
 
 int lock( int x );
 int unlock( int x ) ;
+
+
 
 
 #endif
