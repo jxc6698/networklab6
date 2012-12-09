@@ -199,6 +199,15 @@ struct pesudo_hdr {
 }__attribute__((packed));;
 
 
+struct skbbuf{
+	_U8 buf[1024] ;
+	int ethindex ;
+	int ipindex ;
+	int tcpindex ;
+	int udpindex ;
+	int pptpindex ;
+};
+
 
 
 #define MAX_ARP_SIZE  512 
