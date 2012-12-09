@@ -2,11 +2,11 @@
 #include "function_head.h"
 
 
-
 void *tcp_handle_thread(void *data)
 {
 	return 0;
 }
+
 
 unsigned short in_cksum(unsigned short *addr, int len) 
 { 
@@ -43,12 +43,13 @@ void initial_pthread_pipe()
 void tcp_pack( _U8 *buf , int len , int hlen , _U16 sport ,_U16 dport,int snum , int acknum,_U32 flag , _U16 size , _U16 point , _U32 src , _U32 dst )
 {
 	struct tcp_hdr *tcp = (struct tcp_hdr *)( buf );
+	memset( buf, 0 , hlen ) ;
 	static _U8 buff[4096] ;
 
 	tcp->src_port = htons(sport) ;
 	tcp->dst_port = htons(dport) ;
-	tcp->sequence_num = snum ;
-	tcp->ack_num = acknum ;
+	tcp->sequence_num = htonl(snum) ;
+	tcp->ack_num = htonl(acknum) ;
 //  需要详细改 用 switch
 //	tcp->unknown1 = (flag&0x0f00)>>8 ;
 	tcp->head_len = hlen/4 ;
@@ -56,7 +57,7 @@ void tcp_pack( _U8 *buf , int len , int hlen , _U16 sport ,_U16 dport,int snum ,
 	if( flag & TCP_FIN )
 		tcp->fin = 1 ;
 	if( flag & TCP_SYN )
-		tcp->fin = 1 ;
+		tcp->syn = 1 ;
 	if( flag & TCP_RST )
 		tcp->rst = 1 ;
 	if( flag & TCP_PSH )
@@ -72,14 +73,14 @@ void tcp_pack( _U8 *buf , int len , int hlen , _U16 sport ,_U16 dport,int snum ,
 	if( flag & TCP_NON )
 		tcp->non = 1 ;
 
-	tcp->windows_size = size ;
+	tcp->windows_size = htons(size) ;
 	tcp->emergency_point = point ;
 	tcp->csum = 0 ;
 	memcpy( buff+12 , buf , len ) ;
 	struct pesudo_hdr *pes = (struct pesudo_hdr *)( buff ) ;
 //  这里进行计算的时候我觉得应该是网络序（但是没有测试）
-	pes->saddr = htonl(src) ;
-	pes->daddr = htonl(dst) ;
+	pes->saddr = src ; 
+	pes->daddr = dst ; 
 	pes->unused = 0 ;
 	pes->protocal = IPPROTO_TCP ;    //
 	pes->len = ntohs(len) ;
@@ -98,8 +99,8 @@ void tcp_unpack( _U8 *buf , int len , int *hlen , _U16 *sport ,_U16 *dport,int *
 
 	struct pesudo_hdr *pes = (struct pesudo_hdr *)( buff ) ;
 //  这里进行计算的时候我觉得应该是网络序（但是没有测试）
-	pes->saddr = htonl(src) ;
-	pes->daddr = htonl(dst) ;
+	pes->saddr = src ; // htonl(src) ;
+	pes->daddr = dst ; // htonl(dst) ;
 	pes->unused = 0 ;
 	pes->protocal = IPPROTO_TCP ;    //
 	pes->len = ntohs(len) ;

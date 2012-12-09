@@ -48,9 +48,13 @@ int tcptest( _U8 *buf , int len , _U32 src , _U32 dst )
 	switch( mylink.status )
 	{
 	case TCP_CLOSED :    return 0 ;
-	case TCP_SYN_SEND : 
-						if( tcp->syn && tcp->ack && htonl(tcp->ack_num) == mylink.mynum+1  )
+	case TCP_SYN_SEND :
+						printf("TCP_SYN_SEND\n") ;
+
+						if( tcp->syn && tcp->ack && ((_U32)htonl(tcp->ack_num)) == mylink.mynum+1  )
 						{
+printf("enter deeper\n");
+							mylink.mynum += 1 ;
 							mylink.status = TCP_ESTABLISH ;
 							mylink.rmtnum = htonl(tcp->ack_num) ;
 							struct tcp_hdr *tcp1 =(struct tcp_hdr *)(buff+14+20) ;
@@ -89,14 +93,14 @@ int tcptest( _U8 *buf , int len , _U32 src , _U32 dst )
 void tcp_initial()
 {
 	mylink.status = TCP_CLOSED ;
-	mylink.mynum = 0 ;
-	mylink.rmtnum = 0 ; 
-	mylink.mynum = 1024 ;
-	mylink.w_size = 512 ;
+	mylink.mynum = htonl(0x80571cf0) ; // 0 ;
+	mylink.rmtnum = 0 ; // 0 ; 
+	mylink.mynumd = 1024 ;
+	mylink.w_size = 5840 ;
 	mylink.rmtnumd = 1024 ;
 	mylink.sip = inet_addr("192.168.1.1") ;
 	mylink.dip = inet_addr("192.168.1.2") ;
-	mylink.sport = 30000  ;
+	mylink.sport = 49101  ;
 	mylink.dport = 30000  ;
 }
 
@@ -105,12 +109,30 @@ void tcp_first_step()
 {
 	_U8 buff[1024] ;
 	struct tcp_hdr *tcp1 =(struct tcp_hdr *)(buff+14+20) ;
-							
+	buff[54] = 0x02 ;
+	buff[55] = 0x04 ;
+	buff[56] = 0x05 ;
+	buff[57] = 0xb4 ;
+	buff[58] = 0x04 ;
+	buff[59] = 0x02 ;
+	buff[60] = 0x08 ;
+	buff[61] = 0x0a ;		
+	buff[62] = 0x00 ;
+	buff[63] = 0x73 ;				
+	buff[64] = 0x3e ;
+	buff[65] = 0x9d ;
+	buff[70] = 0x01 ;
+	buff[71] = 0x03 ;
+	buff[72] = 0x03 ;
+	buff[73] = 0x05 ;
 
-	tcp_pack((_U8 *)tcp1 ,20,20,mylink.sport , mylink.dport,mylink.mynum , 0 ,TCP_ACK , mylink.w_size , 0 ,mylink.sip ,mylink.dip ) ;
-	mylink.mynum ++ ;
-	ip_pack( buff+14,20,20+20, 0 , 0 ,64,IP_PROTOTCP , mylink.sip , mylink.dip ) ;
-	ip_sed_process( buff+14,20+20 , mylink.sip , mylink.dip ) ;
+	tcp_pack((_U8 *)tcp1 ,40,40,mylink.sport , mylink.dport,mylink.mynum , 0 ,TCP_SYN , mylink.w_size , 0 ,mylink.sip ,mylink.dip ) ;
+
+;
+	mylink.status = TCP_SYN_SEND ;
+	ip_pack( buff+14,20,20+40, 0 , 0 ,64,IP_PROTOTCP , mylink.sip , mylink.dip ) ;
+	ip_sed_process( buff+14,20+40 , mylink.sip , mylink.dip ) ;
+
 }
 
 							

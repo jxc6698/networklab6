@@ -169,7 +169,7 @@ void initial_route()
 	add_vpn_route( inet_addr( "192.168.2.10" ),inet_addr( "192.168.3.0" ),inet_addr( "255.255.255.0" ) ) ;
 
 
-	add_route( inet_addr( "192.168.1.0" ) , inet_addr( "192.168.1.1" ) , inet_addr("255.255.255.0") , "eth4" ) ;
+	add_route( inet_addr( "192.168.1.0" ) , inet_addr( "192.168.1.2" ) , inet_addr("255.255.255.0") , "eth4" ) ;
 	add_route( inet_addr( "192.168.2.0" ) , inet_addr( "192.168.2.10" ) , inet_addr("255.255.255.0") , "eth5" ) ;
 	add_route( inet_addr( "192.168.3.0" ) , inet_addr( "192.168.3.2" ) , inet_addr("255.255.255.0") , "vpn_eth0" ) ;
 //  "192.168.10.2" not use
@@ -192,6 +192,14 @@ void initial_route()
 	arp_table[1].mac_addr[5] = 0xeb ;	
 	arp_table[1].ip_addr = inet_addr( "192.168.1.1" ); 
 	arp_item_index ++ ;
+	arp_table[2].mac_addr[0] = 0x00 ;
+	arp_table[2].mac_addr[1] = 0x0c ;
+	arp_table[2].mac_addr[2] = 0x29 ;
+	arp_table[2].mac_addr[3] = 0x42 ;
+	arp_table[2].mac_addr[4] = 0xaf ;
+	arp_table[2].mac_addr[5] = 0x37 ;	
+	arp_table[2].ip_addr = inet_addr( "192.168.1.2" ); 
+	arp_item_index ++ ;
 
 
 }
@@ -203,7 +211,7 @@ void initial_route()
 // 返回 1 目的地址是自己  0 不是自己
 int whether_inout( _U8 *addr )    // mac
 {
-	printf( " in whether_inout\n");	
+//	printf( " in whether_inout\n");	
 //	printf("device_index : %d\n", device_index ) ;
 	int i=0,j,mark;
 	

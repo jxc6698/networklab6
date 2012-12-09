@@ -91,11 +91,9 @@ struct tcp_hdr{
 	unsigned short dst_port ;
 	unsigned  sequence_num ;
 	unsigned  ack_num ;
-//	unsigned  unknown1 : 4 ;
 	_U32	res1: 3 ;
 	_U32    non : 1 ;
-	unsigned  head_len : 4 ;   // tcp_head 的大小 in 32bits  5-15
-//	unsigned  unknown2 : 8 ;
+	unsigned  head_len : 4 ;   // tcp_head 的大小 in 32bits  5-15;
 	_U32	fin:1 ;
 	_U32	syn:1 ;
 	_U32	rst:1 ;

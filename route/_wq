@@ -3,7 +3,7 @@ CC = gcc
 CFLAGS = -lpthread  -I./include
 LDFLAGS = -e main
 
-objects = function/function_head.o route.o  essential/essential_data.o message/message.o tcp/tcp.o
+objects = function/function_head.o route.o  essential/essential_data.o message/message.o tcp/tcp.h
 
 headerfile = mylock.h essential_head.h essential_data.h function_head.h multithread.h typess.h header.h arp.h message.h tcp.h
 
@@ -20,5 +20,4 @@ target: $(objects)
 
 clean :
 	find . -name "*.o" | xargs rm -f
-#	rm test
 #	rm -rf *.o

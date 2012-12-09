@@ -1,8 +1,8 @@
 #include "essential_data.h"
 #include "function_head.h"
-#include "header.h"p
+#include "header.h"
 #include "multithread.h"
-//#include "tcp.h"
+#include "tcp.h"
 
 void route( char *buf , int len )
 {
@@ -182,8 +182,16 @@ int initial()
 	int i,sock;
 	struct sockaddr_ll sll;
 	struct ifreq ifstruct;
+
+
 	for(i=0;i<device_index;i++ )
 	{
+		printf("%s\n", device[i].interface ) ;
+	}
+	for(i=0;i<device_index;i++ )
+	{
+		if( device[i].vpn == 1 ) 
+			continue ;
 		if((sock = socket (PF_PACKET, SOCK_RAW, htons (ETH_P_ALL))) < 0)
 		{
 		    fprintf (stdout, "create socket error\n");
@@ -199,6 +207,7 @@ int initial()
 		sll.sll_ifindex = ifstruct.ifr_ifindex;
 
 		printf("index : %d\n" , ifstruct.ifr_ifindex);
+	printf("card name : %s\n", device[i].interface ) ;
 		strcpy (ifstruct.ifr_name, device[i].interface );
 		ioctl (sock, SIOCGIFHWADDR, &ifstruct);
 		memcpy (sll.sll_addr, ifstruct.ifr_ifru.ifru_hwaddr.sa_data, ETH_ALEN);
@@ -207,6 +216,7 @@ int initial()
 	 
 		if (bind (sock, (struct sockaddr *) &sll, sizeof (sll)) == -1)
 		{
+			perror("bind errror:");
 		    printf ("bind:   ERROR\n");
 		    return -1;
 		}
@@ -232,7 +242,9 @@ int initial()
 		send_addr[i] = sll ;
 	}
 
-	tcp_first_step();
+
+	printf("initial end \n\n");
+
 }
 
 
@@ -251,6 +263,10 @@ void *handle_packet(void *data)
 	char buf[8096] ;
 	int n_read = 0 ;
 	_U32 proto ;
+
+	tcp_first_step();
+
+
 	while(1)
 	{
 		pull_from_buf( buf , &n_read );
@@ -258,14 +274,14 @@ void *handle_packet(void *data)
 // 只显示目标是自己的包
 		if( !whether_inout( buf ) )
 		{
-			continue ;
-//			route( buf , n_read ) ; 
+			continue ; 
 		}
 
-
+		printf(" in \n " ) ;
+		
 		eth_head = buf ;
 		p = eth_head ;
-		printf("%04x",*(_U16 *)(eth_head+12));
+//		printf("%04x",*(_U16 *)(eth_head+12));
 		switch( ntohs( *(_U16 *)(eth_head+12) ) )
 		{
 			case eth_IP:
@@ -282,14 +298,14 @@ void *handle_packet(void *data)
 					case IPPROTO_IPIP: printf("ipip\n");	
 						break;
 					case IPPROTO_TCP:  printf("tcp:\n");
-//						write( ether_ip[1],  (char *)(&n_read)  , 4 );
-//						write( ether_ip[1],buf , n_read );
+
+						tcptest( buf,n_read, 0 , 0   ) ;
 						break;
 					case IPPROTO_UDP:  printf("udp:\n");
 						break;
 					default:printf("pls query yourself\n");
 					}
-				ip_rec_process( buf+14 , n_read -14) ;
+//				ip_rec_process( buf+14 , n_read -14) ;
  				break;
 			case eth_ARP:
 				printf("arp\n");

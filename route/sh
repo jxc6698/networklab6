@@ -1,1 +1,5 @@
-gcc  function_head.c  route.c essential_data.c -lpthread -I./include
+make clean
+make 
+./test
+
+
