@@ -56,17 +56,69 @@ int tcptest( _U8 *buf , int len , _U32 src , _U32 dst )
 printf("enter deeper\n");
 							mylink.mynum += 1 ;
 							mylink.status = TCP_ESTABLISH ;
-							mylink.rmtnum = htonl(tcp->ack_num) ;
+							mylink.rmtnum = htonl(tcp->sequence_num) ;
+							mylink.rmtnum += 1 ;
 							struct tcp_hdr *tcp1 =(struct tcp_hdr *)(buff+14+20) ;
 							
 							tcp1->src_port = tcp->dst_port ;
 							tcp1->dst_port = tcp->src_port ;
 							tcp1->sequence_num = htonl(mylink.mynum) ;
+
+	buff[54] = 0x01 ;
+	buff[55] = 0x01 ;
+	buff[56] = 0x08 ;
+	buff[57] = 0x0a ;
+	buff[58] = 0x00 ;
+	buff[59] = 0x02 ;
+	buff[60] = 0xe3 ;
+	buff[61] = 0x11 ;		
+	buff[62] = 0x01 ;
+	buff[63] = 0x00 ;				
+	buff[64] = 0x8f ;
+	buff[65] = 0xff ;
+
 							tcp1->ack_num = htonl(mylink.rmtnum+1) ;
 
-							tcp_pack((_U8 *)tcp1 ,20,20,mylink.sport , mylink.dport,mylink.mynum , mylink.rmtnum ,TCP_ACK , 512 , 0 ,mylink.sip ,mylink.dip ) ;
-							ip_pack( buff+14,20,20+20, 0 , 0 ,64,IP_PROTOTCP , mylink.sip , mylink.dip ) ;
-							ip_sed_process( buff+14,20+20 , mylink.sip , mylink.dip ) ;
+							tcp_pack((_U8 *)tcp1 ,32,32,mylink.sport , mylink.dport,mylink.mynum , mylink.rmtnum ,TCP_ACK , 512 , 0 ,mylink.sip ,mylink.dip ) ;
+							ip_pack( buff+14,20,20+32, 0 , 0 ,64,IP_PROTOTCP , mylink.sip , mylink.dip ) ;
+							ip_sed_process( buff+14,20+32 , mylink.sip , mylink.dip ) ;
+
+
+//  debug
+printf("let us hello world\n");
+
+
+							mylink.rmtnum = htonl(tcp->sequence_num) ;
+
+							
+							tcp1->src_port = tcp->dst_port ;
+							tcp1->dst_port = tcp->src_port ;
+							tcp1->sequence_num = htonl(mylink.mynum) ;
+
+	buff[54] = 0x01 ;
+	buff[55] = 0x01 ;
+	buff[56] = 0x08 ;
+	buff[57] = 0x0a ;
+	buff[58] = 0x00 ;
+	buff[59] = 0x06 ;
+	buff[60] = 0xaf ;
+	buff[61] = 0x6e ;		
+	buff[62] = 0x01 ;
+	buff[63] = 0x04 ;				
+	buff[64] = 0x5c ;
+	buff[65] = 0x4e ;
+	int length = strlen( "hello world\n") ;
+	strncpy( buff+66 , "hello world\n" , length ) ;
+
+							tcp1->ack_num = htonl(mylink.rmtnum+1) ;
+
+							tcp_pack((_U8 *)tcp1 ,32+12,32,mylink.sport , mylink.dport,mylink.mynum , mylink.rmtnum ,TCP_ACK , 512 , 0 ,mylink.sip ,mylink.dip ) ;
+							ip_pack( buff+14,20,20+32+12, 0 , 0 ,64,IP_PROTOTCP , mylink.sip , mylink.dip ) ;
+							ip_sed_process( buff+14,20+32+12 , mylink.sip , mylink.dip ) ;
+
+
+
+
 						}
 						break ;
 	case TCP_SYN_RECV : 
